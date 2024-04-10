@@ -19,6 +19,7 @@ website:
     tools:
       - icon: github
         href: https://github.com/cardo-org/Rembus.jl
+  page-footer: "Powered by [Quarto](https://quarto.org/) and the [Julia Programming Language](https://julialang.org/)."
 
 format:
   html:

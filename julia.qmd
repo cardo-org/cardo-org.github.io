@@ -6,7 +6,7 @@ title: "Julia"
 
 ## Getting Started
 
-Install the `Rembus` package and wait about 1 minute for downloading and precompilation steps. 
+Install the `Rembus` package and wait about a minute for downloading and precompilation steps. 
 
 ```bash
 julia> import Pkg; Pkg.add("Rembus")
@@ -63,10 +63,11 @@ using Rembus
 
 ### Implements a service (RPC)
 
-Below a demo of a component tha implements a RPC service.
+A component that implements a RPC service is just a Julia application that
+implements one ore more methods named as the service to be exposed.
 
-The `stats` service expects a dataframe as input and returns
-some statistics on the value column.
+The below example define the `stats` service that expects a dataframe as
+input and returns some statistics related to the `value` dataframe column.
 
 The returned value is a Dictionary.
 
@@ -74,8 +75,8 @@ The returned value is a Dictionary.
 using Statistics
 using Rembus
 
-# Return a stat summary of dataframes values
-# from value column.
+# Return a stat summary of dataframes
+# values from the value column.
 function stats(df)
     return Dict(
         "min" => min(df.value...),
@@ -89,9 +90,10 @@ end
 
 ```
 
-This is a microservice implementation that can be used by all Rembus components.
+The `stats` method become available to the web of components using the `@expose` macro.
 
-In the following we use a Julia client component and in the [Python](python.qmd) section we request the `stats` service for a pandas dataframe.
+The following example shows a Julia component that request the `stats` service and
+in the [Python](python.qmd) section there is the equivalent request for a pandas dataframe.
 
 ### Request a service (RPC)
 
@@ -102,7 +104,11 @@ prefixed with `@rpc`:
 using DataFrames
 using Rembus
 
-df = DataFrame(:name=>["kpi_$i" for i in 1:5], :ts=>1:5, :value=>rand(5))
+df = DataFrame(
+  :name=>["kpi_$i" for i in 1:5],
+  :ts=>1:5, 
+  :value=>rand(5)
+)
 
 summary = @rpc stats(df)
 
