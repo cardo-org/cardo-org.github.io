@@ -1,0 +1,11 @@
+---
+title: "Rust"
+---
+
+Rust API coming soon.
+
+```rust
+fn main() {
+    println!("Hello, Rembus!");
+}
+```

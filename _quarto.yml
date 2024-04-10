@@ -1,0 +1,31 @@
+project:
+  type: website
+  preview:
+    port: 8080
+
+execute: 
+  freeze: auto
+
+website:
+  title: "Rembus"
+  navbar:
+    logo: "images/logo.png"
+    left:
+      - href: index.qmd
+        text: Home
+      - julia.qmd
+      - python.qmd
+      - rust.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    page-layout: article
+    grid:
+      sidebar-width: 0px
+css: styles.css
+
+
+
