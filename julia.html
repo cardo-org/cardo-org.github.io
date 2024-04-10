@@ -192,7 +192,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><a href="https://github.com/cardo-org/Rembus.jl">Rembus.jl</a> is the Julia implementation of Rembus specification: it provides a broker implementation and the API for Rembus components.</p>
 <section id="getting-started" class="level2">
 <h2 class="anchored" data-anchor-id="getting-started">Getting Started</h2>
-<p>Install the <code>Rembus</code> package and wait about 1 minute for downloading and precompilation steps.</p>
+<p>Install the <code>Rembus</code> package and wait about a minute for downloading and precompilation steps.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span><span class="op">&gt;</span> import Pkg<span class="kw">;</span> <span class="ex">Pkg.add</span><span class="er">(</span><span class="st">"Rembus"</span><span class="kw">)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>   <span class="ex">Resolving</span> package versions...</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="ex">Installed</span> Rembus ─ v0.1.0</span>
@@ -231,14 +231,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="implements-a-service-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="implements-a-service-rpc">Implements a service (RPC)</h3>
-<p>Below a demo of a component tha implements a RPC service.</p>
-<p>The <code>stats</code> service expects a dataframe as input and returns some statistics on the value column.</p>
+<p>A component that implements a RPC service is just a Julia application that implements one ore more methods named as the service to be exposed.</p>
+<p>The below example define the <code>stats</code> service that expects a dataframe as input and returns some statistics related to the <code>value</code> dataframe column.</p>
 <p>The returned value is a Dictionary.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Return a stat summary of dataframes values</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># from value column.</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Return a stat summary of dataframes</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># values from the value column.</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">stats</span>(df)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">Dict</span>(</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"min"</span> <span class="op">=&gt;</span> <span class="fu">min</span>(df.value<span class="op">...</span>),</span>
@@ -249,8 +249,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@expose</span> stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This is a microservice implementation that can be used by all Rembus components.</p>
-<p>In the following we use a Julia client component and in the <a href="./python.html">Python</a> section we request the <code>stats</code> service for a pandas dataframe.</p>
+<p>The <code>stats</code> method become available to the web of components using the <code>@expose</code> macro.</p>
+<p>The following example shows a Julia component that request the <code>stats</code> service and in the <a href="./python.html">Python</a> section there is the equivalent request for a pandas dataframe.</p>
 </section>
 <section id="request-a-service-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="request-a-service-rpc">Request a service (RPC)</h3>
@@ -258,9 +258,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(<span class="op">:</span>name<span class="op">=&gt;</span>[<span class="st">"kpi_</span><span class="sc">$</span>i<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>], <span class="op">:</span>ts<span class="op">=&gt;</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">:</span>value<span class="op">=&gt;</span><span class="fu">rand</span>(<span class="fl">5</span>))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> <span class="pp">@rpc</span> <span class="fu">stats</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>name<span class="op">=&gt;</span>[<span class="st">"kpi_</span><span class="sc">$</span>i<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>],</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>ts<span class="op">=&gt;</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>value<span class="op">=&gt;</span><span class="fu">rand</span>(<span class="fl">5</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> <span class="pp">@rpc</span> <span class="fu">stats</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
@@ -677,6 +681,19 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Powered by <a href="https://quarto.org/">Quarto</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
 
 
 
