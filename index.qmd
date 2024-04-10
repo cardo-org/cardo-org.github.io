@@ -24,11 +24,10 @@ implementing fail-over or balancing features.
 ::: {.g-col-6}
 ## Publish/Subscribe
 
-One component produce a message and one or many interested subscribers
-receive the message.
+One component produce a message and one or many interested subscribers receive it.
 
-When a component goes online again the retroactive feature enable
-the delivery of messages published when a subscribed component was offline.
+When a component goes online again if the retroactive feature is enabled
+the component receives the messages published when it was offline.
 
 :::
 ::: {.g-col-6}

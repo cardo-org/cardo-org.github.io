@@ -2,14 +2,41 @@
 title: "Python"
 ---
 
-The `rembus` Python package provide both a synchronous and an
+The [`rembus`](https://pypi.org/project/rembus/) Python package provide both a synchronous and an
 asynchronous interface.
+
+```python
+# async API
+import rembus
+```
+
+```python
+# sync API
+import rembus.sync as rembus
+```
 
 ## Getting Started
 
 ```bash
 pip install rembus
 ```
+
+Then create a component object to interact with the others components:
+
+```python
+# sync API
+rb = rembus.component()
+
+# async API
+rb = await rembus.component()
+```
+
+The `rb` object provides methods for exposing functions implementation, for subscribing to topics, for message publishing and for service requests:
+
+- rpc
+- publish
+- expose
+- subscribe
 
 ## Request a service (RPC)
 

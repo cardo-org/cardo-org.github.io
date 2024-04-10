@@ -2,7 +2,7 @@
 title: "Julia"
 ---
 
-[Rembus.jl](https://github.com/cardo-org/Rembus.jl) is the Julia implementation of Rumbus specification: it provides a broker implementation and the API for Rembus components. 
+[Rembus.jl](https://github.com/cardo-org/Rembus.jl) is the Julia implementation of Rembus specification: it provides a broker implementation and the API for Rembus components. 
 
 ## Getting Started
 
@@ -46,7 +46,9 @@ This finishes the setup, now you are ready to implements your Rembus components.
 
 ### Test broker services (RPC)  
 
-The `caronte` broker implements itself the `version` and `uptime` services that unsurprisingly returns the broker version and the time in seconds since last reboot, use them to check that `caronte` is up and running:
+The `caronte` broker implements itself the `version` and `uptime` services that unsurprisingly returns the broker version and the time in seconds since last reboot.
+
+They may be used to check that `caronte` is up and running:
 
 
 ```julia
@@ -60,6 +62,8 @@ using Rembus
 ```
 
 ### Implements a service (RPC)
+
+Below a demo of a component tha implements a RPC service.
 
 The `stats` service expects a dataframe as input and returns
 some statistics on the value column.
@@ -87,7 +91,7 @@ end
 
 This is a microservice implementation that can be used by all Rembus components.
 
-In the following we use a Julia client component and in the Python section we request the `stats` service for a pandas dataframe.
+In the following we use a Julia client component and in the [Python](python.qmd) section we request the `stats` service for a pandas dataframe.
 
 ### Request a service (RPC)
 
