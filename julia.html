@@ -189,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p><a href="https://github.com/cardo-org/Rembus.jl">Rembus.jl</a> is the Julia implementation of Rumbus specification: it provides a broker implementation and the API for Rembus components.</p>
+<p><a href="https://github.com/cardo-org/Rembus.jl">Rembus.jl</a> is the Julia implementation of Rembus specification: it provides a broker implementation and the API for Rembus components.</p>
 <section id="getting-started" class="level2">
 <h2 class="anchored" data-anchor-id="getting-started">Getting Started</h2>
 <p>Install the <code>Rembus</code> package and wait about 1 minute for downloading and precompilation steps.</p>
@@ -219,7 +219,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This finishes the setup, now you are ready to implements your Rembus components.</p>
 <section id="test-broker-services-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="test-broker-services-rpc">Test broker services (RPC)</h3>
-<p>The <code>caronte</code> broker implements itself the <code>version</code> and <code>uptime</code> services that unsurprisingly returns the broker version and the time in seconds since last reboot, use them to check that <code>caronte</code> is up and running:</p>
+<p>The <code>caronte</code> broker implements itself the <code>version</code> and <code>uptime</code> services that unsurprisingly returns the broker version and the time in seconds since last reboot.</p>
+<p>They may be used to check that <code>caronte</code> is up and running:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@rpc</span> <span class="fu">version</span>()</span>
@@ -230,6 +231,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="implements-a-service-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="implements-a-service-rpc">Implements a service (RPC)</h3>
+<p>Below a demo of a component tha implements a RPC service.</p>
 <p>The <code>stats</code> service expects a dataframe as input and returns some statistics on the value column.</p>
 <p>The returned value is a Dictionary.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
@@ -248,7 +250,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@expose</span> stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This is a microservice implementation that can be used by all Rembus components.</p>
-<p>In the following we use a Julia client component and in the Python section we request the <code>stats</code> service for a pandas dataframe.</p>
+<p>In the following we use a Julia client component and in the <a href="./python.html">Python</a> section we request the <code>stats</code> service for a pandas dataframe.</p>
 </section>
 <section id="request-a-service-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="request-a-service-rpc">Request a service (RPC)</h3>
