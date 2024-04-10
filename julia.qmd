@@ -91,8 +91,8 @@ In the following we use a Julia client component and in the Python section we re
 
 ### Request a service (RPC)
 
-A client component that use the `stats` service will just prefix
-with `@rpc` what appears as a function call:
+A client component that use the `stats` service will just a function call
+prefixed with `@rpc`:
 
 ```julia
 using DataFrames
