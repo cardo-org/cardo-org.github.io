@@ -1,5 +1,6 @@
 ---
-title: "Messaging for Scientific Computing"
+title: "Rembus"
+subtitle: "The lean messaging middleware"
 ---
 
 The goal of Rembus is to be a messaging middleware for
@@ -7,13 +8,26 @@ systems where the mains building blocks are scientific computing
 and components decoupling using microservices architectural
 patterns.
 
+It is written in [Julia](https://julialang.org/) but designed
+to exchange messages between components implemented in other languages.
+
+It is a fresh approach to messaging: instead of requiring 
+buffers or streams of bytes and loading the application with
+encoding/decoding tasks it accepts primitive types, dictionaries,
+lists and dataframes types through a thin API.
+
+::: {.column-margin}
+User defined types may be transported if the components
+exchanging the message are both written in Julia. 
+:::
+
 ::: {.grid}
 
 ::: {.g-col-6}
 ## RPC
 
 Rembus provides the request/reply pattern where a component request
-a service and another component implements and expose such service. 
+a service and another component implements and exposes such service. 
 
 There may be multiple components exposing the same service and
 different logics for routing the request to a specific server, 

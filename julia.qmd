@@ -90,9 +90,9 @@ end
 
 ```
 
-The `stats` method become available to the web of components using the `@expose` macro.
+The `@expose` macro makes the `stats` method available to connected components.
 
-The following example shows a Julia component that request the `stats` service and
+The following example shows a Julia component that requests the `stats` service and
 in the [Python](python.qmd) section there is the equivalent request for a pandas dataframe.
 
 ### Request a service (RPC)
