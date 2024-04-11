@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Rembus - Messaging for Scientific Computing</title>
+<title>Rembus</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -123,11 +123,12 @@ ul.task-list li input[type="checkbox"] {
         
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Messaging for Scientific Computing</h1>
+<h1 class="title">Rembus</h1>
+<p class="subtitle lead">The lean messaging middleware</p>
 </div>
 
 
@@ -145,10 +146,15 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>The goal of Rembus is to be a messaging middleware for systems where the mains building blocks are scientific computing and components decoupling using microservices architectural patterns.</p>
-<div class="grid">
+<p>It is written in <a href="https://julialang.org/">Julia</a> but designed to exchange messages between components implemented in other languages.</p>
+<p>It is a fresh approach to messaging: instead of requiring buffers or streams of bytes and loading the application with encoding/decoding tasks it accepts primitive types, dictionaries, lists and dataframes types through a thin API.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>User defined types may be transported if the components exchanging the message are both written in Julia.</p>
+</div></div><div class="grid">
 <section id="rpc" class="level2 g-col-6">
 <h2 class="anchored" data-anchor-id="rpc">RPC</h2>
-<p>Rembus provides the request/reply pattern where a component request a service and another component implements and expose such service.</p>
+<p>Rembus provides the request/reply pattern where a component request a service and another component implements and exposes such service.</p>
 <p>There may be multiple components exposing the same service and different logics for routing the request to a specific server, implementing fail-over or balancing features.</p>
 </section>
 <section id="publishsubscribe" class="level2 g-col-6">
