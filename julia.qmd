@@ -11,21 +11,20 @@ Install the `Rembus` package and wait about a minute for downloading and precomp
 ```bash
 julia> import Pkg; Pkg.add("Rembus")
    Resolving package versions...
-   Installed Rembus ─ v0.1.0
-  No Changes to `/tmp/prova/Project.toml`
-  No Changes to `/tmp/prova/Manifest.toml`
+   Installed Rembus ─ v0.2.0
+   ...
 Precompiling project...
-  1 dependency successfully precompiled in 66 seconds. 75 already precompiled.
+  1 dependency successfully precompiled in 73 seconds. 74 already precompiled.
   1 dependency had output during precompilation:
 ┌ Rembus
-│  [2024-04-10T10:28:09.472][Rembus][1][Info] caronte up and running at port tcp:8001
-│  [2024-04-10T10:28:09.742][Rembus][1][Info] caronte up and running at port ws:8000
-│  [2024-04-10T10:28:12.413][Rembus][1][Info] caronte up and running at port zmq:8002
-│  [2024-04-10T10:28:17.279][HTTP.Servers][1][Info] Listening on: 0.0.0.0:8000, thread id: 1
-│  [2024-04-10T10:28:32.519][HTTP.Servers][1][Info] Server on 0.0.0.0:8000 closing
+│  [2024-05-18T10:36:22.538][Rembus][1][Info] caronte up and running at port tcp:8001
+│  [2024-05-18T10:36:23.722][Rembus][1][Info] caronte up and running at port zmq:8002
+│  [2024-05-18T10:36:23.951][Rembus][1][Info] caronte up and running at port ws:8000
+└  
 
 julia>
 ```
+
 Once the package is installed starts the broker:
 
 ```bash
@@ -35,10 +34,18 @@ The following output shows when `caronte` broker start successfully:
 
 
 ```bash
-[2024-04-10T09:45:05.822][Rembus][1][Info] caronte up and running at port tcp:8001
-[2024-04-10T09:45:05.822][Rembus][1][Info] caronte up and running at port ws:8000
-[2024-04-10T09:45:05.822][Rembus][1][Info] caronte up and running at port zmq:8002
-[2024-04-10T09:45:05.823][HTTP.Servers][1][Info] Listening on: 0.0.0.0:8000, thread id: 1
+[2024-05-18T10:41:26.750][Rembus][1][Info] caronte up and running at port ws:8000
+```
+
+By default the broker accepts WebSocket connections on port 8000, but plain tcp sockets and ZeroMQ endpoints are possible. 
+
+For example start all the protocols with:
+
+```bash
+julia -e 'using Rembus; caronte()' -- --ws 8000 --tcp 8001 --zmq 8002
+[2024-05-18T10:46:00.063][Rembus][1][Info] caronte up and running at port tcp:8001
+[2024-05-18T10:46:00.126][Rembus][1][Info] caronte up and running at port zmq:8002
+[2024-05-18T10:46:00.237][Rembus][1][Info] caronte up and running at port ws:8000
 ```
 
 This finishes the setup, now you are ready to implements your Rembus components.
@@ -46,7 +53,7 @@ This finishes the setup, now you are ready to implements your Rembus components.
 
 ### Test broker services (RPC)  
 
-The `caronte` broker implements itself the `version` and `uptime` services that unsurprisingly returns the broker version and the time in seconds since last reboot.
+The `caronte` broker implements itself the `version` and `uptime` RPC services that unsurprisingly returns the broker version and the time in seconds since last reboot.
 
 They may be used to check that `caronte` is up and running:
 
@@ -55,7 +62,7 @@ They may be used to check that `caronte` is up and running:
 using Rembus
 
 @rpc version()
-"0.1.0"
+"0.2.0"
 
 @rpc uptime()
 "up for 15 seconds"
