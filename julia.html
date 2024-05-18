@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.553">
+<meta name="generator" content="quarto-1.4.554">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -195,76 +195,77 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Install the <code>Rembus</code> package and wait about a minute for downloading and precompilation steps.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span><span class="op">&gt;</span> import Pkg<span class="kw">;</span> <span class="ex">Pkg.add</span><span class="er">(</span><span class="st">"Rembus"</span><span class="kw">)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>   <span class="ex">Resolving</span> package versions...</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="ex">Installed</span> Rembus ─ v0.1.0</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">No</span> Changes to <span class="kw">`</span><span class="ex">/tmp/prova/Project.toml</span><span class="kw">`</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">No</span> Changes to <span class="kw">`</span><span class="ex">/tmp/prova/Manifest.toml</span><span class="kw">`</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Precompiling</span> project...</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">1</span> dependency successfully precompiled in 66 seconds. 75 already precompiled.</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">1</span> dependency had output during precompilation:</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">┌</span> Rembus</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">04</span><span class="pp">-</span><span class="ss">10T10:28:09.472</span><span class="pp">][</span><span class="ss">Rembus</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> caronte up and running at port tcp:8001</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">04</span><span class="pp">-</span><span class="ss">10T10:28:09.742</span><span class="pp">][</span><span class="ss">Rembus</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> caronte up and running at port ws:8000</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">04</span><span class="pp">-</span><span class="ss">10T10:28:12.413</span><span class="pp">][</span><span class="ss">Rembus</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> caronte up and running at port zmq:8002</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">04</span><span class="pp">-</span><span class="ss">10T10:28:17.279</span><span class="pp">][</span><span class="ss">HTTP.Servers</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> Listening on: 0.0.0.0:8000, thread id: 1</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">04</span><span class="pp">-</span><span class="ss">10T10:28:32.519</span><span class="pp">][</span><span class="ss">HTTP.Servers</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> Server on 0.0.0.0:8000 closing</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span><span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="ex">Installed</span> Rembus ─ v0.2.0</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>   <span class="ex">...</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Precompiling</span> project...</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">1</span> dependency successfully precompiled in 73 seconds. 74 already precompiled.</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">1</span> dependency had output during precompilation:</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">┌</span> Rembus</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">05</span><span class="pp">-</span><span class="ss">18T10:36:22.538</span><span class="pp">][</span><span class="ss">Rembus</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> caronte up and running at port tcp:8001</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">05</span><span class="pp">-</span><span class="ss">18T10:36:23.722</span><span class="pp">][</span><span class="ss">Rembus</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> caronte up and running at port zmq:8002</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>  <span class="pp">[</span><span class="ss">2024</span><span class="pp">-</span><span class="ss">05</span><span class="pp">-</span><span class="ss">18T10:36:23.951</span><span class="pp">][</span><span class="ss">Rembus</span><span class="pp">][</span><span class="ss">1</span><span class="pp">][</span><span class="ss">Info</span><span class="pp">]</span> caronte up and running at port ws:8000</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">└</span>  </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span><span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Once the package is installed starts the broker:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">shell</span><span class="op">&gt;</span> julia <span class="at">-e</span> <span class="st">'using Rembus; caronte()'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The following output shows when <code>caronte</code> broker start successfully:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-04-10T09:45:05.822][Rembus][1][Info]</span> caronte up and running at port tcp:8001</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-04-10T09:45:05.822][Rembus][1][Info]</span> caronte up and running at port ws:8000</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-04-10T09:45:05.822][Rembus][1][Info]</span> caronte up and running at port zmq:8002</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-04-10T09:45:05.823][HTTP.Servers][1][Info]</span> Listening on: 0.0.0.0:8000, thread id: 1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-05-18T10:41:26.750][Rembus][1][Info]</span> caronte up and running at port ws:8000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By default the broker accepts WebSocket connections on port 8000, but plain tcp sockets and ZeroMQ endpoints are possible.</p>
+<p>For example start all the protocols with:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">-e</span> <span class="st">'using Rembus; caronte()'</span> <span class="at">--</span> <span class="at">--ws</span> 8000 <span class="at">--tcp</span> 8001 <span class="at">--zmq</span> 8002</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-05-18T10:46:00.063][Rembus][1][Info]</span> caronte up and running at port tcp:8001</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-05-18T10:46:00.126][Rembus][1][Info]</span> caronte up and running at port zmq:8002</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">[2024-05-18T10:46:00.237][Rembus][1][Info]</span> caronte up and running at port ws:8000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This finishes the setup, now you are ready to implements your Rembus components.</p>
 <section id="test-broker-services-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="test-broker-services-rpc">Test broker services (RPC)</h3>
-<p>The <code>caronte</code> broker implements itself the <code>version</code> and <code>uptime</code> services that unsurprisingly returns the broker version and the time in seconds since last reboot.</p>
+<p>The <code>caronte</code> broker implements itself the <code>version</code> and <code>uptime</code> RPC services that unsurprisingly returns the broker version and the time in seconds since last reboot.</p>
 <p>They may be used to check that <code>caronte</code> is up and running:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@rpc</span> <span class="fu">version</span>()</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">"0.1.0"</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@rpc</span> <span class="fu">uptime</span>()</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">"up for 15 seconds"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">@rpc</span> <span class="fu">version</span>()</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">"0.2.0"</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="pp">@rpc</span> <span class="fu">uptime</span>()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">"up for 15 seconds"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="implements-a-service-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="implements-a-service-rpc">Implements a service (RPC)</h3>
 <p>A component that implements a RPC service is just a Julia application that implements one ore more methods named as the service to be exposed.</p>
 <p>The below example define the <code>stats</code> service that expects a dataframe as input and returns some statistics related to the <code>value</code> dataframe column.</p>
 <p>The returned value is a Dictionary.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Return a stat summary of dataframes</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># values from the value column.</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">stats</span>(df)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">Dict</span>(</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"min"</span> <span class="op">=&gt;</span> <span class="fu">min</span>(df.value<span class="op">...</span>),</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"max"</span> <span class="op">=&gt;</span> <span class="fu">max</span>(df.value<span class="op">...</span>),</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"mean"</span> <span class="op">=&gt;</span> <span class="fu">mean</span>(df.value),</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"std"</span> <span class="op">=&gt;</span> <span class="fu">std</span>(df.value)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@expose</span> stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Return a stat summary of dataframes</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># values from the value column.</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">stats</span>(df)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">Dict</span>(</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"min"</span> <span class="op">=&gt;</span> <span class="fu">min</span>(df.value<span class="op">...</span>),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"max"</span> <span class="op">=&gt;</span> <span class="fu">max</span>(df.value<span class="op">...</span>),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"mean"</span> <span class="op">=&gt;</span> <span class="fu">mean</span>(df.value),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"std"</span> <span class="op">=&gt;</span> <span class="fu">std</span>(df.value)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="pp">@expose</span> stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The <code>@expose</code> macro makes the <code>stats</code> method available to connected components.</p>
 <p>The following example shows a Julia component that requests the <code>stats</code> service and in the <a href="./python.html">Python</a> section there is the equivalent request for a pandas dataframe.</p>
 </section>
 <section id="request-a-service-rpc" class="level3">
 <h3 class="anchored" data-anchor-id="request-a-service-rpc">Request a service (RPC)</h3>
 <p>A client component that use the <code>stats</code> service will just a function call prefixed with <code>@rpc</code>:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>name<span class="op">=&gt;</span>[<span class="st">"kpi_</span><span class="sc">$</span>i<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>],</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>ts<span class="op">=&gt;</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, </span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>value<span class="op">=&gt;</span><span class="fu">rand</span>(<span class="fl">5</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> <span class="pp">@rpc</span> <span class="fu">stats</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">DataFrames</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fu">DataFrame</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>name<span class="op">=&gt;</span>[<span class="st">"kpi_</span><span class="sc">$</span>i<span class="st">"</span> for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>],</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>ts<span class="op">=&gt;</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">:</span>value<span class="op">=&gt;</span><span class="fu">rand</span>(<span class="fl">5</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> <span class="pp">@rpc</span> <span class="fu">stats</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
