@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Rembus</title>
+<title>JSON-RPC – Rembus</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -67,6 +102,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="styles.css">
@@ -93,7 +131,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -105,7 +143,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Python</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./jsonrpc.html"> 
+    <a class="nav-link active" href="./jsonrpc.html" aria-current="page"> 
 <span class="menu-text">JSON-RPC</span></a>
   </li>  
 </ul>
@@ -120,16 +158,31 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#rpc-request" id="toc-rpc-request" class="nav-link active" data-scroll-target="#rpc-request">RPC Request</a>
+  <ul class="collapse">
+  <li><a href="#server---exposing-a-service" id="toc-server---exposing-a-service" class="nav-link" data-scroll-target="#server---exposing-a-service">Server 🔵 - Exposing a service</a></li>
+  <li><a href="#json-rpc-client" id="toc-json-rpc-client" class="nav-link" data-scroll-target="#json-rpc-client">JSON-RPC Client 🟢</a></li>
+  </ul></li>
+  <li><a href="#sending-notifications" id="toc-sending-notifications" class="nav-link" data-scroll-target="#sending-notifications">Sending Notifications</a>
+  <ul class="collapse">
+  <li><a href="#server---subscribing-to-a-topic" id="toc-server---subscribing-to-a-topic" class="nav-link" data-scroll-target="#server---subscribing-to-a-topic">Server 🔵 - Subscribing to a topic</a></li>
+  <li><a href="#json-rpc-publisher" id="toc-json-rpc-publisher" class="nav-link" data-scroll-target="#json-rpc-publisher">JSON-RPC Publisher 🟢</a></li>
+  </ul></li>
+  <li><a href="#batch" id="toc-batch" class="nav-link" data-scroll-target="#batch">Batch</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Rembus</h1>
-<p class="subtitle lead">The lean messaging middleware</p>
+<h1 class="title">JSON-RPC</h1>
 </div>
 
 
@@ -146,32 +199,121 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The goal of Rembus is to be a messaging middleware for systems where the mains building blocks are scientific computing and components decoupling using microservices architectural patterns.</p>
-<p>It is written in <a href="https://julialang.org/">Julia</a> but designed to exchange messages between components implemented in other languages.</p>
-<p>It is a fresh approach to messaging: instead of requiring buffers or streams of bytes and loading the application with encoding/decoding tasks it accepts primitive types, dictionaries, lists and dataframes types through a thin API.</p>
-<div class="grid">
-<section id="rpc" class="level2 g-col-6">
-<h2 class="anchored" data-anchor-id="rpc">RPC</h2>
-<p>Rembus provides the request/reply pattern where a component request a service and another component implements and exposes such service.</p>
-<p>There may be multiple components exposing the same service and different logics for routing the request to a specific server, implementing fail-over or balancing features.</p>
-</section>
-<section id="publishsubscribe" class="level2 g-col-6">
-<h2 class="anchored" data-anchor-id="publishsubscribe">Publish/Subscribe</h2>
-<p>One component produce a message and one or many interested subscribers receive it.</p>
-<p>When a component goes online again if the retroactive feature is enabled the component receives the messages published when it was offline.</p>
-</section>
-<section id="brokerless" class="level2 g-col-6">
-<h2 class="anchored" data-anchor-id="brokerless">Brokerless</h2>
-<p>In a simple scenario or where a Broker may be redundant or tought as a single point of failure a brokerless architecture consents peer to peer comunication between components.</p>
-</section>
-<section id="dataframes-support" class="level2 g-col-6">
-<h2 class="anchored" data-anchor-id="dataframes-support">DataFrames support</h2>
-<p>Rembus uses the <a href="https://arrow.apache.org/">Arrow</a> columnar format to transport dataframes messages between components.</p>
-<p>Julia and Python components may exchange dataframes betweeen <a href="https://dataframes.juliadata.org/stable/">DataFrames.jl</a>, <a href="https://pandas.pydata.org/">Pandas</a> and <a href="https://docs.pola.rs/">Polars</a> libraries.</p>
-</section>
+<p>Rembus fully supports the <a href="https://www.jsonrpc.org/specification">JSON_RPC 2.0 Specification</a></p>
+<section id="rpc-request" class="level2">
+<h2 class="anchored" data-anchor-id="rpc-request">RPC Request</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+  C(("JSON-RPC
+  Client")) --&gt; S((Julia Server))
+  style C fill:green, color:white
+  style S fill:blue, color:white
+</pre>
 </div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="server---exposing-a-service" class="level3">
+<h3 class="anchored" data-anchor-id="server---exposing-a-service">Server 🔵 - Exposing a service</h3>
+<p>The following (Julia) server exposes a method <code>mymethod</code> over an HTTP endpoint:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">mymethod</span>(;x, y, z) <span class="co"># expect to be called with keywords arguments</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">Dict</span>(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"x"</span> <span class="op">=&gt;</span> x,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"y"</span> <span class="op">=&gt;</span> y,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"z"</span> <span class="op">=&gt;</span> z,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"op"</span> <span class="op">=&gt;</span> <span class="st">"x + y*z"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"value"</span> <span class="op">=&gt;</span> x <span class="op">+</span> y <span class="op">*</span> z</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>rb <span class="op">=</span> <span class="fu">component</span>(http<span class="op">=</span><span class="fl">9000</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">expose</span>(rb, mymethod)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">wait</span>(rb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="json-rpc-client" class="level3">
+<h3 class="anchored" data-anchor-id="json-rpc-client">JSON-RPC Client 🟢</h3>
+<p>When the server method requires keyword arguments, the JSON-RPC <code>params</code> field must be an object with matching keys:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://localhost:9000 <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">'{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">    "jsonrpc": "2.0",</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">    "method": "mymethod",</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">    "params": {"x": 1, "y": 2, "z": 3}</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">  }'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The server responds with a JSON object encoding the Julia <code>Dict</code> returned by <code>mymethod</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"id"</span><span class="fu">:</span><span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"jsonrpc"</span><span class="fu">:</span><span class="st">"2.0"</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"result"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"x"</span><span class="fu">:</span><span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"y"</span><span class="fu">:</span><span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"z"</span><span class="fu">:</span><span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"op"</span><span class="fu">:</span><span class="st">"x + y*z"</span><span class="fu">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"value"</span><span class="fu">:</span><span class="dv">7</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="sending-notifications" class="level2">
+<h2 class="anchored" data-anchor-id="sending-notifications">Sending Notifications</h2>
+<p>A JSON_RPC <strong>Notification</strong> is simply a Request object <strong>without an</strong> <code>id</code> field.</p>
+<p>In Rembus, notifications map naturally to <strong>Pub/Sub messages</strong>: any published message is delivered to all subscribed components.</p>
+<p>In this example, the topic is named <code>mymethod</code>.</p>
+<section id="server---subscribing-to-a-topic" class="level3">
+<h3 class="anchored" data-anchor-id="server---subscribing-to-a-topic">Server 🔵 - Subscribing to a topic</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Rembus</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">mymethod</span>(x, y, z)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">println</span>(<span class="st">"mymethod called with x=</span><span class="sc">$</span>x<span class="st">, y=</span><span class="sc">$</span>y<span class="st">, z=</span><span class="sc">$</span>z<span class="st">"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>rb <span class="op">=</span> <span class="fu">component</span>(http<span class="op">=</span><span class="fl">9000</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">subscribe</span>(rb, mymethod)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Declare readiness to receive messages from subscribed topics,</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># in this case the topic mymethod.</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">reactive</span>(rb)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Start the event loop.</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">wait</span>(rb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="json-rpc-publisher" class="level3">
+<h3 class="anchored" data-anchor-id="json-rpc-publisher">JSON-RPC Publisher 🟢</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://localhost:9000 <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">'{</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">    "jsonrpc": "2.0",</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">    "method": "mymethod",</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">    "params": [1,2,3]</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">  }'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="batch" class="level2">
+<h2 class="anchored" data-anchor-id="batch">Batch</h2>
+<p>To send multiple requests in a single call, the client may submit an array of Request objects:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://localhost:9000 <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">'[</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">    {</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="st">      "jsonrpc": "2.0",</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="st">      "method": "method1",</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">      "params": {"x": 1, "y": 2, "z": 3}</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="st">    },{</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="st">      "jsonrpc": "2.0",</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="st">      "method": "method2",</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="st">      "params": ["mystring", 1.0]</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="st">  ]'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
