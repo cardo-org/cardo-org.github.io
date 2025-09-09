@@ -1,0 +1,8 @@
+title: Badge Shortcodes
+author: My Name
+version: 1.0.0
+contributes:
+  shortcodes:
+   - client.lua
+   - broker.lua
+   - server.lua

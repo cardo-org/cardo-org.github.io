@@ -15,7 +15,7 @@ website:
         text: Home
       - julia.qmd
       - python.qmd
-      - rust.qmd
+      - jsonrpc.qmd
     tools:
       - icon: github
         href: https://github.com/cardo-org/Rembus.jl

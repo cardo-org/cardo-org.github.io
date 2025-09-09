@@ -53,7 +53,7 @@ comunication between components.
 Rembus uses the [Arrow](https://arrow.apache.org/) columnar format to transport
 dataframes messages between components.
 
-Julia, Python and Rust components may exchange dataframes betweeen
+Julia and Python components may exchange dataframes betweeen
 [DataFrames.jl](https://dataframes.juliadata.org/stable/),
 [Pandas](https://pandas.pydata.org/) and [Polars](https://docs.pola.rs/) libraries.
 

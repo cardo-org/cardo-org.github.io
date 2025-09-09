@@ -2,64 +2,166 @@
 title: "Python"
 ---
 
-The [`rembus`](https://pypi.org/project/rembus/) Python package provide both a synchronous and an
-asynchronous interface.
-
-```python
-# async API
-import rembus
-```
-
-```python
-# sync API
-import rembus.sync as rembus
-```
-
 ## Getting Started
+
+Install [`rembus`](https://pypi.org/project/rembus/) with `pip` or `uv`:
 
 ```bash
 pip install rembus
+```
+
+```bash
+uv add rembus
 ```
 
 Then create a component object to interact with the others components:
 
 ```python
 # sync API
-rb = rembus.component()
+rb = rembus.node()
 
 # async API
 rb = await rembus.component()
 ```
 
-The `rb` object provides methods for exposing functions implementation, for subscribing to topics, for message publishing and for service requests:
+The `rb` object provides methods for exposing functions implementation,
+subscribing to topics, publishing messages and requesting services:
 
-- rpc
-- publish
-- expose
-- subscribe
+- `rpc`
+- `publish`
+- `expose`
+- `subscribe`
 
-## Request a service (RPC)
+## RPC
 
-This example is a demo of requesting the service [`stats`](julia.qmd#implements-a-service-rpc) implemented in Julia.
+```{mermaid}
+flowchart LR
+  C(("Client")) --> S((Server))
+  style C fill:#009E73, color:white
+  style S fill:#0072B2, color:white
+```
 
-- A python pandas dataframe is created;
-- The pandas dataframe is used as an argument of the rpc service `stats`;
-- On the RPC server side the `stats` method receive a Julia DataFrame;
-- The return value of `stats` is a Julia Dictionary;
-- On the client RPC side the response is a python dictionary.
+In this example a RPC request is made for the service
+[`stats`](julia.qmd#implements-a-service-rpc) which is implemented in a Julia
+{{< server >}} server:
+
+
+```julia
+# 🔵 stats.jl
+using Statistics
+using Rembus
+
+# Return a stat summary of dataframes
+# values from the value column.
+function stats(df)
+    return Dict(
+        "min" => min(df.value...),
+        "max" => max(df.value...),
+        "mean" => mean(df.value),
+        "std" => std(df.value)
+    )
+end
+
+rb = component()
+
+expose(rb, stats)
+
+println("up and running")
+wait(rb)
+```
+
+The python {{< client >}} client creates a pandas DataFrame and requests the
+`stats` service:
 
 ```python
-import rembus.sync as rembus
+# 🟢 client.py
+import rembus
 from random import random
 import pandas as pd
 
+nrows = 1000000 
 df = pd.DataFrame({
-    "name": [f"kpi_{i}" for i in range(1,6)],
-    "ts": range(1,6),
-    "value": [random() for i in range(1,6)]
+    "name": [f"kpi_{i}" for i in range(1,nrows)],
+    "ts": range(1,nrows),
+    "value": [random() for i in range(1,nrows)]
 })
 
-rb = rembus.component()
+rb = rembus.node()
 summary = rb.rpc("stats", df)
 
+```
+
+The sequence of steps is:
+
+- On the {{< client >}} client side a python pandas dataframe is created and used as argument
+  of the `rpc` method;
+- On the {{< server >}} server side the `stats` method is called with a Julia DataFrame as
+  argument;
+- On the {{< server >}} server side the return value of `stats` is a Julia Dictionary;
+- On the {{< client >}} client side the response is a Python dictionary.
+
+
+## Publish-Subscribe
+
+<!--
+ColorBrewer’s colorblind-safe sets
+-->
+```{mermaid}
+flowchart LR
+  C(("Publish")) --> S1((Sub-1))
+  C(("Publish")) --> S2((Sub-2))
+  style C fill:#009E73, color:white
+  style S1 fill:#0072B2, color:white
+  style S2 fill:#0072B2, color:white
+```
+
+```python
+# 🔵 sub-1.py
+import rembus
+
+def mytopic(data):
+    println("[Sub-1] mytopic:$data")
+end
+
+rb = await component(name="sub-1")
+await subscribe(rb, mytopic)
+await wait(rb)
+```
+
+```python
+# 🔵 sub-2.jl
+import rembus
+
+def mytopic(data):
+    print(f"[Sub-2] DB update: {data}")
+
+rb = rembus.node(name="sub-2")
+rb.subscribe(mytopic)
+rb.wait()
+```
+
+```julia
+# 🟢 publish.jl
+using Rembus
+
+rb = component([
+  "ws://:3001/client",
+  "ws://:3002/client"
+])
+
+sensor1 = Dict(
+  "T" => 18.3, "H" => 45.2
+)
+sensor2 = Dict(
+  "P" => 2.3
+)
+
+publish(
+    rb,
+    "mytopic",
+    Dict(
+        "sensor#1" => sensor1,
+        "sensor#2" => sensor2,
+    )
+)
 ```

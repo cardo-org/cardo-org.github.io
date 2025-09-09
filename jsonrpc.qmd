@@ -1,0 +1,136 @@
+---
+title: JSON-RPC
+---
+
+Rembus fully supports the 
+[JSON_RPC 2.0 Specification](https://www.jsonrpc.org/specification)
+
+## RPC Request
+
+```{mermaid}
+flowchart LR
+  C(("JSON-RPC
+  Client")) --> S((Julia Server))
+  style C fill:green, color:white
+  style S fill:blue, color:white
+```
+
+
+### Server 🔵 - Exposing a service
+
+The following (Julia) server exposes a method `mymethod` over an HTTP endpoint:
+
+```julia
+using Rembus
+
+function mymethod(;x, y, z) # expect to be called with keywords arguments
+    return Dict(
+        "x" => x,
+        "y" => y,
+        "z" => z,
+        "op" => "x + y*z",
+        "value" => x + y * z
+    )
+end
+
+rb = component(http=9000)
+expose(rb, mymethod)
+wait(rb)
+```
+
+### JSON-RPC Client 🟢
+
+When the server method requires keyword arguments, the JSON-RPC `params` field
+must be an object with matching keys:  
+
+```bash
+curl -X POST http://localhost:9000 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "mymethod",
+    "params": {"x": 1, "y": 2, "z": 3}
+  }'
+```
+
+The server responds with a JSON object encoding the Julia `Dict` returned
+by `mymethod`:
+
+```json
+{
+  "id":1,
+  "jsonrpc":"2.0",
+  "result": {
+    "x":1,
+    "y":2,
+    "z":3,
+    "op":"x + y*z",
+    "value":7
+  }
+}  
+```
+
+## Sending Notifications
+
+A JSON_RPC **Notification** is simply a Request object **without an** `id`
+field.
+
+In Rembus, notifications map naturally to **Pub/Sub messages**: any published
+message is delivered to all subscribed components.
+
+In this example, the topic is named `mymethod`.
+
+### Server 🔵 - Subscribing to a topic
+
+```julia
+using Rembus
+
+function mymethod(x, y, z)
+    println("mymethod called with x=$x, y=$y, z=$z")
+end
+
+rb = component(http=9000)
+subscribe(rb, mymethod)
+
+# Declare readiness to receive messages from subscribed topics,
+# in this case the topic mymethod.
+reactive(rb)
+
+# Start the event loop.
+wait(rb)
+
+```
+
+### JSON-RPC Publisher 🟢
+
+```bash
+curl -X POST http://localhost:9000 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "mymethod",
+    "params": [1,2,3]
+  }'
+```
+
+## Batch
+
+To send multiple requests in a single call, the client may submit an array
+of Request objects:
+
+```bash
+curl -X POST http://localhost:9000 \
+  -H "Content-Type: application/json" \
+  -d '[
+    {
+      "jsonrpc": "2.0",
+      "method": "method1",
+      "params": {"x": 1, "y": 2, "z": 3}
+    },{
+      "jsonrpc": "2.0",
+      "method": "method2",
+      "params": ["mystring", 1.0]
+    }
+  ]'
+
+```
