@@ -8,6 +8,7 @@ execute:
 
 website:
   title: "Rembus"
+  site-url: https://cardo-org.github.io
   navbar:
     logo: "images/logo.png"
     left:
@@ -16,16 +17,20 @@ website:
       - julia.qmd
       - python.qmd
       - jsonrpc.qmd
+      - text: Blog
+        href: posts.qmd
     tools:
       - icon: github
         href: https://github.com/cardo-org/Rembus.jl
-  page-footer: "Powered by [Quarto](https://quarto.org/) and the [Julia Programming Language](https://julialang.org/)."
+  page-footer:
+    center: |
+      © 2026 Cardo Org · Built with Quarto
 
 format:
   html:
-    theme: cosmo
+    theme: litera
     css: styles.css
-    toc: true
+    toc: false
     page-layout: article
     grid:
       sidebar-width: 0px
