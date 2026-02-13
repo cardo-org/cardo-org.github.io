@@ -4,7 +4,7 @@ title: "Python"
 
 ## Getting Started
 
-Install [`rembus`](https://pypi.org/project/rembus/) with `pip` or `uv`:
+Install [`rembus`](https://pypi.org/project/rembus/) using `pip` or `uv`:
 
 ```bash
 pip install rembus
@@ -14,25 +14,36 @@ pip install rembus
 uv add rembus
 ```
 
-Then create a component object to interact with the others components:
+For the basic concepts about node types and addressing see the
+[Julia docs](julia.qmd#rembus-node-types)
+
+Rembus provides both synchronous and asynchronous APIs:
 
 ```python
-# sync API
-rb = rembus.node()
+import rembus as rb
 
-# async API
-rb = await rembus.component()
+# Synchronous API
+cli = rb.node("mynode")
 ```
 
-The `rb` object provides methods for exposing functions implementation,
-subscribing to topics, publishing messages and requesting services:
+```python
+import rembus as rb
 
-- `rpc`
-- `publish`
-- `expose`
-- `subscribe`
+# Asynchronous API
+cli = await rembus.component("mynode")
+```
 
-## RPC
+The returned `cli` object represents a Rembus component and exposes the core
+communication primitives:
+
+- `rpc` — request a remote service
+- `expose` — expose a local function as an RPC service
+- `publish` — publish messages to a topic
+- `subscribe` — subscribe to topic updates
+
+---
+
+## RPC Call
 
 ```{mermaid}
 flowchart LR
@@ -41,127 +52,123 @@ flowchart LR
   style S fill:#0072B2, color:white
 ```
 
-In this example a RPC request is made for the service
-[`stats`](julia.qmd#implements-a-service-rpc) which is implemented in a Julia
-{{< server >}} server:
+This example shows a Python client invoking an RPC service implemented in Julia.
 
+### Julia Server
 
 ```julia
-# 🔵 stats.jl
 using Statistics
 using Rembus
 
-# Return a stat summary of dataframes
-# values from the value column.
 function stats(df)
     return Dict(
-        "min" => min(df.value...),
-        "max" => max(df.value...),
+        "min"  => minimum(df.value),
+        "max"  => maximum(df.value),
         "mean" => mean(df.value),
-        "std" => std(df.value)
+        "std"  => std(df.value)
     )
 end
 
-rb = component()
-
-expose(rb, stats)
+bro = component()
+expose(bro, stats)
 
 println("up and running")
-wait(rb)
+wait(bro)
 ```
 
-The python {{< client >}} client creates a pandas DataFrame and requests the
-`stats` service:
+### Python Client
 
 ```python
-# 🟢 client.py
-import rembus
-from random import random
+import rembus as rb
 import pandas as pd
+from random import random
 
-nrows = 1000000 
+nrows = 1_000_000
+
 df = pd.DataFrame({
-    "name": [f"kpi_{i}" for i in range(1,nrows)],
-    "ts": range(1,nrows),
-    "value": [random() for i in range(1,nrows)]
+    "name": [f"kpi_{i}" for i in range(nrows)],
+    "ts": range(nrows),
+    "value": [random() for _ in range(nrows)],
 })
 
-rb = rembus.node()
-summary = rb.rpc("stats", df)
-
+cli = rembus.node("foo")
+summary = cli.rpc("stats", df)
+cli.close()
 ```
 
-The sequence of steps is:
+### Data Flow
 
-- On the {{< client >}} client side a python pandas dataframe is created and used as argument
-  of the `rpc` method;
-- On the {{< server >}} server side the `stats` method is called with a Julia DataFrame as
-  argument;
-- On the {{< server >}} server side the return value of `stats` is a Julia Dictionary;
-- On the {{< client >}} client side the response is a Python dictionary.
+1. The Python client sends a pandas DataFrame.
+2. Rembus converts it into a Julia DataFrame.
+3. The Julia service executes the computation.
+4. The result is returned as a Python dictionary.
+5. The WS connection is closed.
 
+---
 
-## Publish-Subscribe
+## Publish / Subscribe
 
-<!--
-ColorBrewer’s colorblind-safe sets
--->
+This example shows a couple of subsribed nodes implemented in Python and a
+Julia publisher.
+
 ```{mermaid}
 flowchart LR
-  C(("Publish")) --> S1((Sub-1))
-  C(("Publish")) --> S2((Sub-2))
+  C(("Publisher")) --> S1((Subscriber 1))
+  C --> S2((Subscriber 2))
   style C fill:#009E73, color:white
   style S1 fill:#0072B2, color:white
   style S2 fill:#0072B2, color:white
 ```
 
+### Subscribers (Python)
+
 ```python
-# 🔵 sub-1.py
-import rembus
+import rembus as rb
 
 def mytopic(data):
-    println("[Sub-1] mytopic:$data")
-end
+    print(f"[Sub-1] mytopic: {data}")
 
-rb = await component(name="sub-1")
-await subscribe(rb, mytopic)
-await wait(rb)
+sub = rembus.node(name="sub-1")
+sub.subscribe(mytopic)
+
+print("up and running")
+sub.wait()
 ```
 
 ```python
-# 🔵 sub-2.jl
 import rembus
 
 def mytopic(data):
-    print(f"[Sub-2] DB update: {data}")
+    print(f"[Sub-2] mytopic: {data}")
 
-rb = rembus.node(name="sub-2")
-rb.subscribe(mytopic)
-rb.wait()
+sub = rembus.node(name="sub-2")
+sub.subscribe(mytopic)
+
+print("up and running")
+sub.wait()
 ```
+
+### Publisher (Julia)
 
 ```julia
-# 🟢 publish.jl
 using Rembus
 
-rb = component([
+pub = component([
   "ws://:3001/client",
   "ws://:3002/client"
 ])
 
-sensor1 = Dict(
-  "T" => 18.3, "H" => 45.2
-)
-sensor2 = Dict(
-  "P" => 2.3
-)
+sensor1 = Dict("T" => 18.3, "H" => 45.2)
+sensor2 = Dict("P" => 2.3)
 
 publish(
-    rb,
+    pub,
     "mytopic",
     Dict(
         "sensor#1" => sensor1,
         "sensor#2" => sensor2,
     )
 )
+
+close(pub)
 ```

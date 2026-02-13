@@ -1,0 +1,160 @@
+---
+title: "Introducing Rembus"
+description: "Small by design, adaptable by nature."
+date: 2026-02-13
+categories: [Julia, Python, RPC]
+format:
+  html:
+    mermaid: {}
+---
+
+![](../images/introduction.png)
+
+## What is Rembus?
+
+Rembus is a distributed messaging system designed as a simple and robust
+solution for building distributed applications. In addition to real-time
+messaging, Rembus includes **embedded datalake support** for managing data at
+rest, leveraging [**DuckDB**](https://duckdb.org/) and
+[**DuckLake**](https://ducklake.select/) as first-class components of the
+system.
+
+I originally implemented [Rembus](https://github.com/cardo-org/Rembus.jl)
+because I wanted a **simple, robust, and reliable** mechanism for building
+distributed applications in [Julia](https://julialang.org/).
+
+Over time, Rembus grew to include many additional features. Eventually, I
+realized it was worth writing about what is possible with it, both to document
+the ideas behind it and to share a different perspective on distributed system
+design.
+
+This first blog post focuses on the
+[Python implementation of Rembus](https://github.com/cardo-org/rembus.python).
+I hope it gives you some inspiration, or at least a fresh viewpoint, when
+designing or evaluating distributed architectures.
+
+Have fun!
+
+## RPC at a glance
+
+Simplicity is the main driving force behind Rembus: install the package, start
+a few processes, and you already have the essential building blocks of a
+distributed system: combining messaging, computation, and local analytics without
+external brokers or heavyweight infrastructure.
+
+To get started, install the package using `uv`:
+
+```sh
+uv add rembus
+```
+
+or with `pip`:
+
+```sh
+pip install rembus
+```
+
+In the following example, we will use **three terminals**, running a
+Python interpreter or the python script `calculator.py` for the RPC services:
+
+- **Terminal 1 (Broker)** — starts a broker that routes messages
+- **Terminal 2 (Client)** — invokes remote calculator operations
+- **Terminal 3 (Calculator)** — implements and exposes calculator services
+
+```{mermaid}
+graph BT
+    B[Terminal 1<br/>Broker]
+
+    A[Terminal 2<br/>Client]
+    C[Terminal 3<br/>Calculator]
+
+    A --> |connect| B
+    C --> |connect| B
+```
+
+---
+
+## Broker
+
+The `Broker` component is responsible for routing RPC requests and responses
+between connected nodes.
+
+In **Terminal 1**, start a Python interpreter and create a broker listening on
+port `8000`:
+
+```python
+>>> import rembus as rb
+>>> bro = rb.node(port=8000)
+```
+
+Port `8000` is the default WebSocket port, so the following is equivalent:
+
+```python
+>>> bro = rb.node()
+```
+
+---
+
+## Calculator
+
+The `Calculator` component implements two simple operations—`add` and `multiply`
+—and exposes them on the `+` and `*` topics.
+
+```python
+# calculator.py
+import rembus as rb
+
+def add(x, y):
+    return x + y
+
+def multiply(x, y):
+    return x * y
+
+def main():
+    srv = rb.node()
+    srv.expose(add, topic="+")
+    srv.expose(multiply, topic="*")
+    srv.wait()
+
+if __name__ == "__main__":
+    main()
+```
+
+Start the calculator service:
+
+```sh
+python calculator.py
+```
+
+---
+
+## Client
+
+In **Terminal 2**, call the remote services exposed by the calculator:
+
+```python
+>>> import rembus as rb
+>>> cli = rb.node("myclient")
+>>> cli.rpc("*", 2, 3)
+6
+>>> cli.rpc("+", 2, 3)
+5
+```
+
+The client transparently invokes remote procedures as if they were local
+function calls.
+
+---
+
+## What’s next?
+
+We have covered the very basics of Rembus: components, a broker, and simple
+RPC calls.
+
+Feedback is very welcome. If you find Rembus interesting a
+[star](https://github.com/cardo-org/rembus.python)
+is always very appreciated ⭐.
+
+Stay tuned—this is just the beginning. In upcoming posts we’ll explore pub/sub
+messaging, persistence, fault tolerance, Julia–Python interoperability,
+MQTT integration, and native DataFrame messaging.
