@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>Rembus</title>
+<link>https://cardo-org.github.io/posts.html</link>
+<atom:link href="https://cardo-org.github.io/posts.xml" rel="self" type="application/rss+xml"/>
+<description></description>
+<generator>quarto-1.8.27</generator>
+<lastBuildDate>Fri, 13 Feb 2026 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Introducing Rembus</title>
+  <link>https://cardo-org.github.io/posts/2026-02-13-rembus-a-gentle-introduction.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p><img src="https://cardo-org.github.io/images/introduction.png" class="img-fluid"></p>
+<section id="what-is-rembus" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-rembus">What is Rembus?</h2>
+<p>Rembus is a distributed messaging system designed as a simple and robust solution for building distributed applications. In addition to real-time messaging, Rembus includes <strong>embedded datalake support</strong> for managing data at rest, leveraging <a href="https://duckdb.org/"><strong>DuckDB</strong></a> and <a href="https://ducklake.select/"><strong>DuckLake</strong></a> as first-class components of the system.</p>
+<p>I originally implemented <a href="https://github.com/cardo-org/Rembus.jl">Rembus</a> because I wanted a <strong>simple, robust, and reliable</strong> mechanism for building distributed applications in <a href="https://julialang.org/">Julia</a>.</p>
+<p>Over time, Rembus grew to include many additional features. Eventually, I realized it was worth writing about what is possible with it, both to document the ideas behind it and to share a different perspective on distributed system design.</p>
+<p>This first blog post focuses on the <a href="https://github.com/cardo-org/rembus.python">Python implementation of Rembus</a>. I hope it gives you some inspiration, or at least a fresh viewpoint, when designing or evaluating distributed architectures.</p>
+<p>Have fun!</p>
+</section>
+<section id="rpc-at-a-glance" class="level2">
+<h2 class="anchored" data-anchor-id="rpc-at-a-glance">RPC at a glance</h2>
+<p>Simplicity is the main driving force behind Rembus: install the package, start a few processes, and you already have the essential building blocks of a distributed system: combining messaging, computation, and local analytics without external brokers or heavyweight infrastructure.</p>
+<p>To get started, install the package using <code>uv</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> add rembus</span></code></pre></div></div>
+<p>or with <code>pip</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install rembus</span></code></pre></div></div>
+<p>In the following example, we will use <strong>three terminals</strong>, running a Python interpreter or the python script <code>calculator.py</code> for the RPC services:</p>
+<ul>
+<li><strong>Terminal 1 (Broker)</strong> — starts a broker that routes messages</li>
+<li><strong>Terminal 2 (Client)</strong> — invokes remote calculator operations</li>
+<li><strong>Terminal 3 (Calculator)</strong> — implements and exposes calculator services</li>
+</ul>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph BT
+    B[Terminal 1&lt;br/&gt;Broker]
+
+    A[Terminal 2&lt;br/&gt;Client]
+    C[Terminal 3&lt;br/&gt;Calculator]
+
+    A --&gt; |connect| B
+    C --&gt; |connect| B
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="broker" class="level2">
+<h2 class="anchored" data-anchor-id="broker">Broker</h2>
+<p>The <code>Broker</code> component is responsible for routing RPC requests and responses between connected nodes.</p>
+<p>In <strong>Terminal 1</strong>, start a Python interpreter and create a broker listening on port <code>8000</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> rembus <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> rb</span>
+<span id="cb3-2"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> bro <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rb.node(port<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8000</span>)</span></code></pre></div></div>
+<p>Port <code>8000</code> is the default WebSocket port, so the following is equivalent:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> bro <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rb.node()</span></code></pre></div></div>
+<hr>
+</section>
+<section id="calculator" class="level2">
+<h2 class="anchored" data-anchor-id="calculator">Calculator</h2>
+<p>The <code>Calculator</code> component implements two simple operations—<code>add</code> and <code>multiply</code> —and exposes them on the <code>+</code> and <code>*</code> topics.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># calculator.py</span></span>
+<span id="cb5-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> rembus <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> rb</span>
+<span id="cb5-3"></span>
+<span id="cb5-4"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> add(x, y):</span>
+<span id="cb5-5">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> y</span>
+<span id="cb5-6"></span>
+<span id="cb5-7"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> multiply(x, y):</span>
+<span id="cb5-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> y</span>
+<span id="cb5-9"></span>
+<span id="cb5-10"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> main():</span>
+<span id="cb5-11">    srv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rb.node()</span>
+<span id="cb5-12">    srv.expose(add, topic<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"+"</span>)</span>
+<span id="cb5-13">    srv.expose(multiply, topic<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"*"</span>)</span>
+<span id="cb5-14">    srv.wait()</span>
+<span id="cb5-15"></span>
+<span id="cb5-16"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__name__</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"__main__"</span>:</span>
+<span id="cb5-17">    main()</span></code></pre></div></div>
+<p>Start the calculator service:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python</span> calculator.py</span></code></pre></div></div>
+<hr>
+</section>
+<section id="client" class="level2">
+<h2 class="anchored" data-anchor-id="client">Client</h2>
+<p>In <strong>Terminal 2</strong>, call the remote services exposed by the calculator:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> rembus <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> rb</span>
+<span id="cb7-2"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> cli <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rb.node(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"myclient"</span>)</span>
+<span id="cb7-3"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> cli.rpc(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"*"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>)</span>
+<span id="cb7-4"><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span></span>
+<span id="cb7-5"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;&gt;</span> cli.rpc(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"+"</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>)</span>
+<span id="cb7-6"><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span></span></code></pre></div></div>
+<p>The client transparently invokes remote procedures as if they were local function calls.</p>
+<hr>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next?</h2>
+<p>We have covered the very basics of Rembus: components, a broker, and simple RPC calls.</p>
+<p>Feedback is very welcome. If you find Rembus interesting a <a href="https://github.com/cardo-org/rembus.python">star</a> is always very appreciated ⭐.</p>
+<p>Stay tuned—this is just the beginning. In upcoming posts we’ll explore pub/sub messaging, persistence, fault tolerance, Julia–Python interoperability, MQTT integration, and native DataFrame messaging.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>Julia</category>
+  <category>Python</category>
+  <category>RPC</category>
+  <guid>https://cardo-org.github.io/posts/2026-02-13-rembus-a-gentle-introduction.html</guid>
+  <pubDate>Fri, 13 Feb 2026 00:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
