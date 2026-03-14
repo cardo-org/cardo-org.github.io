@@ -4,7 +4,7 @@
     "href": "posts.html",
     "title": "Rembus Blog",
     "section": "",
-    "text": "News and tips about Rembus.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nIntroducing Rembus\n\n\n\nJulia\n\nPython\n\nRPC\n\n\n\nSmall by design, adaptable by nature.\n\n\n\n\n\nFeb 13, 2026\n\n\n\n\n\nNo matching items"
+    "text": "News and tips about Rembus.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPub/Sub message semantics in Rembus\n\n\n\nPython\n\nPub/Sub\n\n\n\nFrom fire-and-forget to exactly-once messaging with Rembus QoS\n\n\n\n\n\nMar 14, 2026\n\n\n\n\n\n\n\n\n\n\n\n\nIntroducing Rembus\n\n\n\nJulia\n\nPython\n\nRPC\n\n\n\nSmall by design, adaptable by nature.\n\n\n\n\n\nFeb 13, 2026\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "python.html",
@@ -33,6 +33,90 @@
     "title": "Python",
     "section": "Publish / Subscribe",
     "text": "Publish / Subscribe\nThis example shows a couple of subsribed nodes implemented in Python and a Julia publisher.\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\n\nSubscribers (Python)\nimport rembus as rb\n\ndef mytopic(data):\n    print(f\"[Sub-1] mytopic: {data}\")\n\nsub = rembus.node(name=\"sub-1\")\nsub.subscribe(mytopic)\n\nprint(\"up and running\")\nsub.wait()\nimport rembus\n\ndef mytopic(data):\n    print(f\"[Sub-2] mytopic: {data}\")\n\nsub = rembus.node(name=\"sub-2\")\nsub.subscribe(mytopic)\n\nprint(\"up and running\")\nsub.wait()\n\n\nPublisher (Julia)\nusing Rembus\n\npub = component([\n  \"ws://:3001/client\",\n  \"ws://:3002/client\"\n])\n\nsensor1 = Dict(\"T\" =&gt; 18.3, \"H\" =&gt; 45.2)\nsensor2 = Dict(\"P\" =&gt; 2.3)\n\npublish(\n    pub,\n    \"mytopic\",\n    Dict(\n        \"sensor#1\" =&gt; sensor1,\n        \"sensor#2\" =&gt; sensor2,\n    )\n)\n\nclose(pub)"
+  },
+  {
+    "objectID": "posts/2026-03-14-pubsub.html#how-messages-flow",
+    "href": "posts/2026-03-14-pubsub.html#how-messages-flow",
+    "title": "Pub/Sub message semantics in Rembus",
+    "section": "How messages flow",
+    "text": "How messages flow\n\n\n\n\n\nflowchart LR\n  P1[publisher-1]\n  P2[publisher-2]\n  P3[publisher-3]\n\n  T1((topic-a))\n  T2((topic-b))\n  T3((topic-c))\n\n  S1[subscriber-1]\n  S2[subscriber-2]\n  S3[subscriber-3]\n  S4[subscriber-4]\n\n  B[[broker]]\n\n  P1 --&gt; B\n  P2 --&gt; B\n  P3 --&gt; B\n\n  B --&gt; T1\n  B --&gt; T2\n  B --&gt; T3\n\n  T1 --&gt; S1\n  T1 --&gt; S2\n\n  T2 --&gt; S2\n  T2 --&gt; S3\n\n  T3 --&gt; S1\n  T3 --&gt; S3\n  T3 --&gt; S4\n\n\n\n\n\n\nAt the center of the system is the broker, which acts as the coordination point between message producers (publishers) and message consumers (subscribers).\nCommunication happens through logical channels called topics. Each topic represents a domain-specific message stream: publishers send messages to topics, and subscribers receive messages from the topics they are subscribed to."
+  },
+  {
+    "objectID": "posts/2026-03-14-pubsub.html#quality-of-service-qos",
+    "href": "posts/2026-03-14-pubsub.html#quality-of-service-qos",
+    "title": "Pub/Sub message semantics in Rembus",
+    "section": "Quality of Service (QoS)",
+    "text": "Quality of Service (QoS)\nQuality of Service defines the delivery guarantees provided by the Pub/Sub system. Rembus supports three QoS levels, each representing a different trade-off between performance and reliability.\n\nQOS0 — at most once\nThis is a fire-and-forget delivery mode.\nMessages are published and forwarded on a best-effort basis, with no guarantee that subscribers will actually receive them. Messages are never retried and may be lost.\nQOS0 is appropriate when minimizing latency is more important than reliability.\n\n\nQOS1 — at least once\nWith QOS1, the broker guarantees that each message is delivered to the subscriber at least once.\nTo achieve this, retransmissions may occur, which means that subscribers can receive the same message multiple times. Subscribers are therefore expected to handle duplicate deliveries in an idempotent way.\n\n\nQOS2 — exactly once\nQOS2 provides the strongest delivery guarantee.\nThe broker ensures that each subscriber receives a message exactly once—no loss and no duplication—as long as both the broker and the subscriber remain online during delivery.\nThis guarantee requires additional coordination between the components and results in lower throughput compared to QOS0 and QOS1."
+  },
+  {
+    "objectID": "posts/2026-03-14-pubsub.html#pubsub-message-flow",
+    "href": "posts/2026-03-14-pubsub.html#pubsub-message-flow",
+    "title": "Pub/Sub message semantics in Rembus",
+    "section": "Pub/Sub message flow",
+    "text": "Pub/Sub message flow\nThe sequence diagram below shows a QOS2 exchange between publisher-1, the broker, and subscriber-1.\n\n\n\n\n\nsequenceDiagram\n  participant P as publisher-1\n  participant B as broker\n  participant S as subscriber-1\n\n  P-&gt;&gt;B: PUBLISH (msg, msg-id, qos=QOS2)\n  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)\n  S-&gt;&gt;B: ACK (msg-id)\n  B-&gt;&gt;S: ACK2 (msg-id)\n  B-&gt;&gt;P: ACK (msg-id)\n  P-&gt;&gt;B: ACK2 (msg-id)\n\n\n\n\n\n\n\nMessage exchange steps\n\nThe publisher sends a message to the broker with QOS2.\nThe broker forwards the message to the subscriber.\nAfter successfully processing the message, the subscriber replies with ACK, confirming receipt.\nThe broker responds with ACK2, signaling that no further replicas of this message will be sent to the subscriber.\nThe broker sends an ACK to the publisher, confirming that the subscriber has acknowledged the message.\nFinally, the publisher replies with ACK2, signaling that it will stop retransmitting the message to the broker.\n\nAt this point, the message lifecycle is complete and exactly-once delivery is guaranteed.\n\n\nComparison with other QoS levels\n\nQOS2 uses a two-phase acknowledgement (ACK / ACK2) to prevent both message loss and duplication.\nQOS1 omits the ACK2 step and may result in duplicate deliveries.\nQOS0 relies solely on PUBLISH messages and provides no delivery guarantees.\n\n\n\nRetransmissions and failure handling\nThe sequence above represents the ideal case, where the network is reliable and all processes are functioning correctly.\nIn real systems, messages or acknowledgements may be lost, or processes may temporarily go down. In these cases, retransmissions occur. For example, the broker may resend the same PUBLISH message multiple times until it receives an ACK from the subscriber:\n\n\n\n\n\nsequenceDiagram\n  participant B as broker\n  participant S as subscriber-1\n\n  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)\n  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)\n  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)\n  S-&gt;&gt;B: ACK (msg-id)\n  B-&gt;&gt;S: ACK2 (msg-id)\n\n\n\n\n\n\nThe subscriber must therefore be able to recognize duplicate msg-id values and ensure idempotent processing until the handshake completes.\n\n\nRetransmission configuration\nThe maximum number of retransmissions and the acknowledgement timeout are configurable via environment variables:\n\nREMBUS_SEND_RETRIES - default 10\nREMBUS_ACK_TIMEOUT - default 2 seconds\n\nThese values can also be overridden using a settings.json file.\n\n\nBroker configuration\nbro_host:$REMBUS_DIR/broker/settings.json:\n{\n  \"send_retries\": 5,\n}\n\n\nSubscriber configuration\nsub_host:$REMBUS_DIR/subscriber-1/settings.json:\n{\n  \"ack_timeout\": 1\n}\nValues defined in settings.json take precedence over environment variables."
+  },
+  {
+    "objectID": "posts/2026-03-14-pubsub.html#qos-in-not-enough",
+    "href": "posts/2026-03-14-pubsub.html#qos-in-not-enough",
+    "title": "Pub/Sub message semantics in Rembus",
+    "section": "QoS in not enough",
+    "text": "QoS in not enough\nEven QOS2 only guarantees exactly-once delivery while the subscriber is online.\nIf a subscriber has not started yet, or is temporarily disconnected, messages published during that time are not delivered by default.\nTo address this, Rembus provides the msgfrom option when creating a subscription.\n\nRecovering missed messages with msgfrom\nThe msgfrom parameter specifies how far back in time the broker should look for previously published but undelivered messages when a subscription is created.\nThe value is expressed in nanoseconds.\n\nSpecial values\n\nrembus.LastReceived (float(\"inf\")) Deliver all past messages that were not previously delivered to this subscriber.\nrembus.Now (0.0) — default Deliver only messages published after the subscription is established.\n\nExample: replay messages from the past hour:\nimport rembus as rb\n\ndef topic_a(payload):\n    print(f\"topic_a: recv: {payload}\")\n\nsub = rb.node(\"subscriber-1\")\n\none_hour_ns = 3_600_000_000_000\n\nsub.subscribe(\n    topic_a,\n    topic=\"topic-a\",\n    msgfrom=one_hour_ns\n)\nThis subscription replays any messages published in the last hour that were not delivered to subscriber-1, and then continues receiving new messages normally."
+  },
+  {
+    "objectID": "posts/2026-03-14-pubsub.html#publishing-with-qos",
+    "href": "posts/2026-03-14-pubsub.html#publishing-with-qos",
+    "title": "Pub/Sub message semantics in Rembus",
+    "section": "Publishing with QoS",
+    "text": "Publishing with QoS\nWhen publishing a message, the desired Quality of Service level can be specified explicitly. If no QoS is provided, Rembus defaults to rb.QOS0, favoring low-latency, fire-and-forget delivery.\nThe following example publishes a message to topic-a using QOS1, ensuring that the message is delivered to subscribers at least once:\nimport rembus as rb\n\npub = rb.node(\"publisher-1\")\n\npub.publish(\n  \"topic-a\", \n  {\"name\": \"dn1\", \"value\": 2.5},\n  qos=rb.QOS1\n)"
+  },
+  {
+    "objectID": "posts/2026-03-14-pubsub.html#summary",
+    "href": "posts/2026-03-14-pubsub.html#summary",
+    "title": "Pub/Sub message semantics in Rembus",
+    "section": "Summary",
+    "text": "Summary\n\nQoS controls delivery guarantees, not persistence.\nQOS2 ensures exactly-once delivery only while subscribers are online.\nmsgfrom allows subscribers to recover missed messages after downtime.\nReliability requires both QoS and replay to work together.\nFeedback is very welcome—and if you find Rembus interesting, a GitHub star is always very appreciated ⭐."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Rembus",
+    "section": "",
+    "text": "The goal of Rembus is to be a messaging middleware for systems where the mains building blocks are scientific computing and components decoupling.\nIt is a fresh approach to messaging: instead of requiring buffers or streams of bytes and loading the application with encoding/decoding tasks it accepts primitive types, dictionaries, lists and dataframes types through a thin API."
+  },
+  {
+    "objectID": "index.html#data-at-rest",
+    "href": "index.html#data-at-rest",
+    "title": "Rembus",
+    "section": "Data at Rest",
+    "text": "Data at Rest\nPub/Sub messages can be automatically materialized into tables by declaring a schema that maps topics to columns.\n{\n  \"tables\": [\n    {\n      \"table\": \"telemetry\",\n      \"topic\": \":sensor/telemetry\",\n      \"columns\": [\n        {\"col\": \"sensor\", \"type\": \"TEXT\"},\n        {\"col\": \"temperature\", \"type\": \"DOUBLE\"},\n        {\"col\": \"pressure\", \"type\": \"DOUBLE\"},\n        {\"col\": \"timestamp\", \"type\": \"UBIGINT\"}\n      ]\n    }\n  ]\n}\nOnce materialized, the data becomes queryable. How to query depends on the catalog backend.\nIf the catalog is a traditional SQL database such as SQLite or PostgreSQL, multiple connections are permitted and standard SQL clients can access the database concurrently while Rembus is running:\nSELECT * FROM telemetry WHERE temperature &gt; 15.0\nWhen using an embedded DuckDB catalog only the Rembus process has direct access to the database and queries should be executed via Rembus RPC using topic query_&lt;topic&gt;:\n# Return a DataFrame.\ndf = rpc(\n    cli,\n    \"query_telemetry\",\n    {\"where\": \"temperature &gt; 15.0\"}\n)"
+  },
+  {
+    "objectID": "index.html#rpc",
+    "href": "index.html#rpc",
+    "title": "Rembus",
+    "section": "RPC",
+    "text": "RPC\nRembus provides the request/reply pattern where a component request a service and another component implements and exposes such service.\nThere may be multiple components exposing the same service and different logics for routing the request to a specific server, implementing fail-over or balancing features."
+  },
+  {
+    "objectID": "index.html#pubsub",
+    "href": "index.html#pubsub",
+    "title": "Rembus",
+    "section": "Pub/Sub",
+    "text": "Pub/Sub\nOne component produce a message and one or many interested subscribers receive it.\nWhen a component goes online again if the retroactive feature is enabled the component receives the messages published when it was offline."
+  },
+  {
+    "objectID": "index.html#brokerless",
+    "href": "index.html#brokerless",
+    "title": "Rembus",
+    "section": "Brokerless",
+    "text": "Brokerless\nIn a simple scenario or where a Broker may be redundant or tought as a single point of failure a brokerless architecture consents peer to peer comunication between components."
+  },
+  {
+    "objectID": "index.html#dataframes-support",
+    "href": "index.html#dataframes-support",
+    "title": "Rembus",
+    "section": "DataFrames support",
+    "text": "DataFrames support\nRembus uses the Arrow columnar format to transport dataframes messages between components.\nJulia and Python components may exchange dataframes betweeen DataFrames.jl, Pandas and Polars libraries."
   },
   {
     "objectID": "julia.html",
@@ -103,48 +187,6 @@
     "title": "Julia",
     "section": "",
     "text": "Rembus is configurable via environment variables and settings.json.\nConfigurable aspects include:\n\nData directories\nMessage timeouts\nKeep-alive intervals\nConnection behavior\n\nSee the Configuration documentation."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Rembus",
-    "section": "",
-    "text": "The goal of Rembus is to be a messaging middleware for systems where the mains building blocks are scientific computing and components decoupling.\nIt is a fresh approach to messaging: instead of requiring buffers or streams of bytes and loading the application with encoding/decoding tasks it accepts primitive types, dictionaries, lists and dataframes types through a thin API."
-  },
-  {
-    "objectID": "index.html#data-at-rest",
-    "href": "index.html#data-at-rest",
-    "title": "Rembus",
-    "section": "Data at Rest",
-    "text": "Data at Rest\nPub/Sub messages can be automatically materialized into tables by declaring a schema that maps topics to columns.\n{\n  \"tables\": [\n    {\n      \"table\": \"telemetry\",\n      \"topic\": \":sensor/telemetry\",\n      \"columns\": [\n        {\"col\": \"sensor\", \"type\": \"TEXT\"},\n        {\"col\": \"temperature\", \"type\": \"DOUBLE\"},\n        {\"col\": \"pressure\", \"type\": \"DOUBLE\"},\n        {\"col\": \"timestamp\", \"type\": \"UBIGINT\"}\n      ]\n    }\n  ]\n}\nOnce materialized, the data becomes queryable. How to query depends on the catalog backend.\nIf the catalog is a traditional SQL database such as SQLite or PostgreSQL, multiple connections are permitted and standard SQL clients can access the database concurrently while Rembus is running:\nSELECT * FROM telemetry WHERE temperature &gt; 15.0\nWhen using an embedded DuckDB catalog only the Rembus process has direct access to the database and queries should be executed via Rembus RPC using topic query_&lt;topic&gt;:\n# Return a DataFrame.\ndf = rpc(\n    cli,\n    \"query_telemetry\",\n    {\"where\": \"temperature &gt; 15.0\"}\n)"
-  },
-  {
-    "objectID": "index.html#rpc",
-    "href": "index.html#rpc",
-    "title": "Rembus",
-    "section": "RPC",
-    "text": "RPC\nRembus provides the request/reply pattern where a component request a service and another component implements and exposes such service.\nThere may be multiple components exposing the same service and different logics for routing the request to a specific server, implementing fail-over or balancing features."
-  },
-  {
-    "objectID": "index.html#pubsub",
-    "href": "index.html#pubsub",
-    "title": "Rembus",
-    "section": "Pub/Sub",
-    "text": "Pub/Sub\nOne component produce a message and one or many interested subscribers receive it.\nWhen a component goes online again if the retroactive feature is enabled the component receives the messages published when it was offline."
-  },
-  {
-    "objectID": "index.html#brokerless",
-    "href": "index.html#brokerless",
-    "title": "Rembus",
-    "section": "Brokerless",
-    "text": "Brokerless\nIn a simple scenario or where a Broker may be redundant or tought as a single point of failure a brokerless architecture consents peer to peer comunication between components."
-  },
-  {
-    "objectID": "index.html#dataframes-support",
-    "href": "index.html#dataframes-support",
-    "title": "Rembus",
-    "section": "DataFrames support",
-    "text": "DataFrames support\nRembus uses the Arrow columnar format to transport dataframes messages between components.\nJulia and Python components may exchange dataframes betweeen DataFrames.jl, Pandas and Polars libraries."
   },
   {
     "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#what-is-rembus",

@@ -10,7 +10,322 @@
 <atom:link href="https://cardo-org.github.io/posts.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.8.27</generator>
-<lastBuildDate>Fri, 13 Feb 2026 00:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 14 Mar 2026 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Pub/Sub message semantics in Rembus</title>
+  <link>https://cardo-org.github.io/posts/2026-03-14-pubsub.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p><img src="https://cardo-org.github.io/images/pubsub.jpg" class="img-fluid"></p>
+<section id="how-messages-flow" class="level2">
+<h2 class="anchored" data-anchor-id="how-messages-flow">How messages flow</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+  P1[publisher-1]
+  P2[publisher-2]
+  P3[publisher-3]
+
+  T1((topic-a))
+  T2((topic-b))
+  T3((topic-c))
+
+  S1[subscriber-1]
+  S2[subscriber-2]
+  S3[subscriber-3]
+  S4[subscriber-4]
+
+  B[[broker]]
+
+  P1 --&gt; B
+  P2 --&gt; B
+  P3 --&gt; B
+
+  B --&gt; T1
+  B --&gt; T2
+  B --&gt; T3
+
+  T1 --&gt; S1
+  T1 --&gt; S2
+
+  T2 --&gt; S2
+  T2 --&gt; S3
+
+  T3 --&gt; S1
+  T3 --&gt; S3
+  T3 --&gt; S4
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>At the center of the system is the <strong>broker</strong>, which acts as the coordination point between message producers (<strong>publishers</strong>) and message consumers (<strong>subscribers</strong>).</p>
+<p>Communication happens through logical channels called <strong>topics</strong>. Each topic represents a domain-specific message stream: publishers send messages to topics, and subscribers receive messages from the topics they are subscribed to.</p>
+</section>
+<section id="quality-of-service-qos" class="level2">
+<h2 class="anchored" data-anchor-id="quality-of-service-qos">Quality of Service (QoS)</h2>
+<p>Quality of Service defines the delivery guarantees provided by the Pub/Sub system. Rembus supports three QoS levels, each representing a different trade-off between performance and reliability.</p>
+<section id="qos0-at-most-once" class="level3">
+<h3 class="anchored" data-anchor-id="qos0-at-most-once"><code>QOS0</code> — at most once</h3>
+<p>This is a fire-and-forget delivery mode.</p>
+<p>Messages are published and forwarded on a best-effort basis, with no guarantee that subscribers will actually receive them. Messages are never retried and may be lost.</p>
+<p><code>QOS0</code> is appropriate when minimizing latency is more important than reliability.</p>
+</section>
+<section id="qos1-at-least-once" class="level3">
+<h3 class="anchored" data-anchor-id="qos1-at-least-once"><code>QOS1</code> — at least once</h3>
+<p>With <code>QOS1</code>, the broker guarantees that each message is delivered to the subscriber at least once.</p>
+<p>To achieve this, retransmissions may occur, which means that subscribers can receive the same message multiple times. Subscribers are therefore expected to handle duplicate deliveries in an idempotent way.</p>
+</section>
+<section id="qos2-exactly-once" class="level3">
+<h3 class="anchored" data-anchor-id="qos2-exactly-once"><code>QOS2</code> — exactly once</h3>
+<p><code>QOS2</code> provides the strongest delivery guarantee.</p>
+<p>The broker ensures that each subscriber receives a message <strong>exactly once</strong>—no loss and no duplication—as long as both the broker and the subscriber remain online during delivery.</p>
+<p>This guarantee requires additional coordination between the components and results in lower throughput compared to <code>QOS0</code> and <code>QOS1</code>.</p>
+</section>
+</section>
+<section id="pubsub-message-flow" class="level2">
+<h2 class="anchored" data-anchor-id="pubsub-message-flow">Pub/Sub message flow</h2>
+<p>The sequence diagram below shows a <code>QOS2</code> exchange between <code>publisher-1</code>, the <code>broker</code>, and <code>subscriber-1</code>.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">sequenceDiagram
+  participant P as publisher-1
+  participant B as broker
+  participant S as subscriber-1
+
+  P-&gt;&gt;B: PUBLISH (msg, msg-id, qos=QOS2)
+  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)
+  S-&gt;&gt;B: ACK (msg-id)
+  B-&gt;&gt;S: ACK2 (msg-id)
+  B-&gt;&gt;P: ACK (msg-id)
+  P-&gt;&gt;B: ACK2 (msg-id)
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="message-exchange-steps" class="level4">
+<h4 class="anchored" data-anchor-id="message-exchange-steps">Message exchange steps</h4>
+<ol type="1">
+<li><p>The publisher sends a message to the broker with <code>QOS2</code>.</p></li>
+<li><p>The broker forwards the message to the subscriber.</p></li>
+<li><p>After successfully processing the message, the subscriber replies with <code>ACK</code>, confirming receipt.</p></li>
+<li><p>The broker responds with <code>ACK2</code>, signaling that no further replicas of this message will be sent to the subscriber.</p></li>
+<li><p>The broker sends an <code>ACK</code> to the publisher, confirming that the subscriber has acknowledged the message.</p></li>
+<li><p>Finally, the publisher replies with <code>ACK2</code>, signaling that it will stop retransmitting the message to the broker.</p></li>
+</ol>
+<p>At this point, the message lifecycle is complete and <strong>exactly-once delivery</strong> is guaranteed.</p>
+</section>
+<section id="comparison-with-other-qos-levels" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-with-other-qos-levels">Comparison with other QoS levels</h4>
+<ul>
+<li><p><code>QOS2</code> uses a two-phase acknowledgement (<code>ACK</code> / <code>ACK2</code>) to prevent both message loss and duplication.</p></li>
+<li><p><code>QOS1</code> omits the <code>ACK2</code> step and may result in duplicate deliveries.</p></li>
+<li><p><code>QOS0</code> relies solely on <code>PUBLISH</code> messages and provides no delivery guarantees.</p></li>
+</ul>
+</section>
+<section id="retransmissions-and-failure-handling" class="level4">
+<h4 class="anchored" data-anchor-id="retransmissions-and-failure-handling">Retransmissions and failure handling</h4>
+<p>The sequence above represents the ideal case, where the network is reliable and all processes are functioning correctly.</p>
+<p>In real systems, messages or acknowledgements may be lost, or processes may temporarily go down. In these cases, retransmissions occur. For example, the broker may resend the same <code>PUBLISH</code> message multiple times until it receives an <code>ACK</code> from the subscriber:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">sequenceDiagram
+  participant B as broker
+  participant S as subscriber-1
+
+  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)
+  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)
+  B-&gt;&gt;S: PUBLISH (msg, msg-id, qos=QOS2)
+  S-&gt;&gt;B: ACK (msg-id)
+  B-&gt;&gt;S: ACK2 (msg-id)
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The subscriber must therefore be able to recognize duplicate <code>msg-id</code> values and ensure idempotent processing until the handshake completes.</p>
+</section>
+<section id="retransmission-configuration" class="level4">
+<h4 class="anchored" data-anchor-id="retransmission-configuration">Retransmission configuration</h4>
+<p>The maximum number of retransmissions and the acknowledgement timeout are configurable via environment variables:</p>
+<ul>
+<li><p><code>REMBUS_SEND_RETRIES</code> - default <code>10</code></p></li>
+<li><p><code>REMBUS_ACK_TIMEOUT</code> - default <code>2</code> seconds</p></li>
+</ul>
+<p>These values can also be overridden using a <code>settings.json</code> file.</p>
+</section>
+<section id="broker-configuration" class="level4">
+<h4 class="anchored" data-anchor-id="broker-configuration">Broker configuration</h4>
+<p><code>bro_host:$REMBUS_DIR/broker/settings.json</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb1-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"send_retries"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb1-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+</section>
+<section id="subscriber-configuration" class="level4">
+<h4 class="anchored" data-anchor-id="subscriber-configuration">Subscriber configuration</h4>
+<p><code>sub_host:$REMBUS_DIR/subscriber-1/settings.json</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb2-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"ack_timeout"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb2-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+<p>Values defined in <code>settings.json</code> take precedence over environment variables.</p>
+</section>
+</section>
+<section id="qos-in-not-enough" class="level2">
+<h2 class="anchored" data-anchor-id="qos-in-not-enough">QoS in not enough</h2>
+<p>Even <code>QOS2</code> only guarantees <em>exactly-once delivery</em> while the subscriber is online.</p>
+<p>If a subscriber has not started yet, or is temporarily disconnected, messages published during that time are not delivered by default.</p>
+<p>To address this, Rembus provides the <code>msgfrom</code> option when creating a subscription.</p>
+<section id="recovering-missed-messages-with-msgfrom" class="level3">
+<h3 class="anchored" data-anchor-id="recovering-missed-messages-with-msgfrom">Recovering missed messages with msgfrom</h3>
+<p>The <code>msgfrom</code> parameter specifies how far back in time the broker should look for previously published but undelivered messages when a subscription is created.</p>
+<p>The value is expressed in <strong>nanoseconds</strong>.</p>
+<section id="special-values" class="level4">
+<h4 class="anchored" data-anchor-id="special-values">Special values</h4>
+<ul>
+<li><p><code>rembus.LastReceived</code> (<code>float("inf")</code>) Deliver all past messages that were not previously delivered to this subscriber.</p></li>
+<li><p><code>rembus.Now</code> (<code>0.0</code>) — <strong>default</strong> Deliver only messages published after the subscription is established.</p></li>
+</ul>
+<p>Example: replay messages from the past hour:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> rembus <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> rb</span>
+<span id="cb3-2"></span>
+<span id="cb3-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> topic_a(payload):</span>
+<span id="cb3-4">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"topic_a: recv: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>payload<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb3-5"></span>
+<span id="cb3-6">sub <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rb.node(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"subscriber-1"</span>)</span>
+<span id="cb3-7"></span>
+<span id="cb3-8">one_hour_ns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3_600_000_000_000</span></span>
+<span id="cb3-9"></span>
+<span id="cb3-10">sub.subscribe(</span>
+<span id="cb3-11">    topic_a,</span>
+<span id="cb3-12">    topic<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"topic-a"</span>,</span>
+<span id="cb3-13">    msgfrom<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>one_hour_ns</span>
+<span id="cb3-14">)</span></code></pre></div></div>
+<p>This subscription replays any messages published in the last hour that were not delivered to <code>subscriber-1</code>, and then continues receiving new messages normally.</p>
+</section>
+</section>
+</section>
+<section id="publishing-with-qos" class="level2">
+<h2 class="anchored" data-anchor-id="publishing-with-qos">Publishing with QoS</h2>
+<p>When publishing a message, the desired Quality of Service level can be specified explicitly. If no QoS is provided, Rembus defaults to <strong><code>rb.QOS0</code></strong>, favoring low-latency, fire-and-forget delivery.</p>
+<p>The following example publishes a message to <code>topic-a</code> using <code>QOS1</code>, ensuring that the message is delivered to subscribers at least once:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> rembus <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> rb</span>
+<span id="cb4-2"></span>
+<span id="cb4-3">pub <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> rb.node(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"publisher-1"</span>)</span>
+<span id="cb4-4"></span>
+<span id="cb4-5">pub.publish(</span>
+<span id="cb4-6">  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"topic-a"</span>, </span>
+<span id="cb4-7">  {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"name"</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dn1"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"value"</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.5</span>},</span>
+<span id="cb4-8">  qos<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>rb.QOS1</span>
+<span id="cb4-9">)</span></code></pre></div></div>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li><p>QoS controls delivery guarantees, not persistence.</p></li>
+<li><p>QOS2 ensures exactly-once delivery only while subscribers are online.</p></li>
+<li><p><code>msgfrom</code> allows subscribers to recover missed messages after downtime.</p></li>
+<li><p>Reliability requires both QoS and replay to work together.</p></li>
+<li><p>Feedback is very welcome—and if you find Rembus interesting, a GitHub <a href="https://github.com/cardo-org/rembus.python">star</a> is always very appreciated ⭐.</p></li>
+</ul>
+
+
+</section>
+
+ ]]></description>
+  <category>Python</category>
+  <category>Pub/Sub</category>
+  <guid>https://cardo-org.github.io/posts/2026-03-14-pubsub.html</guid>
+  <pubDate>Sat, 14 Mar 2026 00:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Introducing Rembus</title>
   <link>https://cardo-org.github.io/posts/2026-02-13-rembus-a-gentle-introduction.html</link>
