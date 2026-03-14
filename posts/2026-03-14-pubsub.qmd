@@ -1,0 +1,277 @@
+---
+title: "Pub/Sub message semantics in Rembus"
+description: "From fire-and-forget to exactly-once messaging with Rembus QoS"
+date: 2026-03-14
+categories: [Python, Pub/Sub]
+format:
+  html:
+    mermaid: {}
+---
+
+![](../images/pubsub.jpg)
+
+## How messages flow
+
+```{mermaid}
+flowchart LR
+  P1[publisher-1]
+  P2[publisher-2]
+  P3[publisher-3]
+
+  T1((topic-a))
+  T2((topic-b))
+  T3((topic-c))
+
+  S1[subscriber-1]
+  S2[subscriber-2]
+  S3[subscriber-3]
+  S4[subscriber-4]
+
+  B[[broker]]
+
+  P1 --> B
+  P2 --> B
+  P3 --> B
+
+  B --> T1
+  B --> T2
+  B --> T3
+
+  T1 --> S1
+  T1 --> S2
+
+  T2 --> S2
+  T2 --> S3
+
+  T3 --> S1
+  T3 --> S3
+  T3 --> S4
+```
+
+At the center of the system is the **broker**, which acts as the coordination point
+between message producers (**publishers**) and message consumers (**subscribers**).
+
+Communication happens through logical channels called **topics**. Each topic
+represents a domain-specific message stream: publishers send messages to topics,
+and subscribers receive messages from the topics they are subscribed to.
+
+## Quality of Service (QoS)
+
+Quality of Service defines the delivery guarantees provided by the Pub/Sub system.
+Rembus supports three QoS levels, each representing a different trade-off between
+performance and reliability.
+
+### `QOS0` — at most once
+
+This is a fire-and-forget delivery mode.
+
+Messages are published and forwarded on a best-effort basis, with no guarantee
+that subscribers will actually receive them. Messages are never retried and may
+be lost.
+
+`QOS0` is appropriate when minimizing latency is more important than reliability.
+
+### `QOS1` — at least once
+
+With `QOS1`, the broker guarantees that each message is delivered to the subscriber
+at least once.
+
+To achieve this, retransmissions may occur, which means that subscribers can
+receive the same message multiple times. Subscribers are therefore expected to
+handle duplicate deliveries in an idempotent way.
+
+### `QOS2` — exactly once
+
+`QOS2` provides the strongest delivery guarantee.
+
+The broker ensures that each subscriber receives a message **exactly once**—no
+loss and no duplication—as long as both the broker and the subscriber remain online
+during delivery.
+
+This guarantee requires additional coordination between the components and
+results in lower throughput compared to `QOS0` and `QOS1`.
+
+## Pub/Sub message flow
+
+The sequence diagram below shows a `QOS2` exchange between
+`publisher-1`, the `broker`, and `subscriber-1`.
+
+```{mermaid}
+sequenceDiagram
+  participant P as publisher-1
+  participant B as broker
+  participant S as subscriber-1
+
+  P->>B: PUBLISH (msg, msg-id, qos=QOS2)
+  B->>S: PUBLISH (msg, msg-id, qos=QOS2)
+  S->>B: ACK (msg-id)
+  B->>S: ACK2 (msg-id)
+  B->>P: ACK (msg-id)
+  P->>B: ACK2 (msg-id)
+```
+
+#### Message exchange steps
+
+1. The publisher sends a message to the broker with `QOS2`.
+
+1. The broker forwards the message to the subscriber.
+
+1. After successfully processing the message, the subscriber replies with `ACK`,
+   confirming receipt.
+
+1. The broker responds with `ACK2`, signaling that no further replicas of this
+   message will be sent to the subscriber.
+
+1. The broker sends an `ACK` to the publisher, confirming that the subscriber has
+   acknowledged the message.
+
+1. Finally, the publisher replies with `ACK2`, signaling that it will stop retransmitting
+   the message to the broker.
+
+At this point, the message lifecycle is complete and **exactly-once delivery**
+is guaranteed.
+
+#### Comparison with other QoS levels
+
+* `QOS2` uses a two-phase acknowledgement (`ACK` / `ACK2`) to prevent both
+  message loss and duplication.
+
+* `QOS1` omits the `ACK2` step and may result in duplicate deliveries.
+
+* `QOS0` relies solely on `PUBLISH` messages and provides no delivery guarantees.
+
+#### Retransmissions and failure handling
+
+The sequence above represents the ideal case, where the network is reliable and
+all processes are functioning correctly.
+
+In real systems, messages or acknowledgements may be lost, or processes may
+temporarily go down. In these cases, retransmissions occur. For example, the
+broker may resend the same `PUBLISH` message multiple times until it receives an
+`ACK` from the subscriber:
+
+```{mermaid}
+sequenceDiagram
+  participant B as broker
+  participant S as subscriber-1
+
+  B->>S: PUBLISH (msg, msg-id, qos=QOS2)
+  B->>S: PUBLISH (msg, msg-id, qos=QOS2)
+  B->>S: PUBLISH (msg, msg-id, qos=QOS2)
+  S->>B: ACK (msg-id)
+  B->>S: ACK2 (msg-id)
+```
+The subscriber must therefore be able to recognize duplicate `msg-id` values and
+ensure idempotent processing until the handshake completes.
+
+#### Retransmission configuration
+
+The maximum number of retransmissions and the acknowledgement timeout are
+configurable via environment variables:
+
+* `REMBUS_SEND_RETRIES` - default `10`
+
+* `REMBUS_ACK_TIMEOUT` - default `2` seconds
+
+
+These values can also be overridden using a `settings.json` file.
+
+#### Broker configuration
+
+`bro_host:$REMBUS_DIR/broker/settings.json`:
+```json
+{
+  "send_retries": 5,
+}
+```
+
+#### Subscriber configuration
+
+`sub_host:$REMBUS_DIR/subscriber-1/settings.json`:
+```json
+{
+  "ack_timeout": 1
+}
+```
+
+Values defined in `settings.json` take precedence over environment variables.
+
+## QoS in not enough
+
+Even `QOS2` only guarantees *exactly-once delivery* while the subscriber is online.
+
+If a subscriber has not started yet, or is temporarily disconnected, messages
+published during that time are not delivered by default.
+
+To address this, Rembus provides the `msgfrom` option when creating a subscription.
+
+### Recovering missed messages with msgfrom
+
+The `msgfrom` parameter specifies how far back in time the broker should look
+for previously published but undelivered messages when a subscription is created.
+
+The value is expressed in **nanoseconds**.
+
+#### Special values
+
+* `rembus.LastReceived` (`float("inf")`)
+Deliver all past messages that were not previously delivered to this subscriber.
+
+* `rembus.Now` (`0.0`) — **default**
+Deliver only messages published after the subscription is established.
+
+Example: replay messages from the past hour:
+
+```python
+import rembus as rb
+
+def topic_a(payload):
+    print(f"topic_a: recv: {payload}")
+
+sub = rb.node("subscriber-1")
+
+one_hour_ns = 3_600_000_000_000
+
+sub.subscribe(
+    topic_a,
+    topic="topic-a",
+    msgfrom=one_hour_ns
+)
+```
+This subscription replays any messages published in the last hour that were not
+delivered to `subscriber-1`, and then continues receiving new messages normally.
+
+## Publishing with QoS
+
+When publishing a message, the desired Quality of Service level can be specified
+explicitly. If no QoS is provided, Rembus defaults to **`rb.QOS0`**, favoring
+low-latency, fire-and-forget delivery.
+
+The following example publishes a message to `topic-a` using `QOS1`, ensuring
+that the message is delivered to subscribers at least once:
+
+```python
+import rembus as rb
+
+pub = rb.node("publisher-1")
+
+pub.publish(
+  "topic-a", 
+  {"name": "dn1", "value": 2.5},
+  qos=rb.QOS1
+)
+```
+
+## Summary
+
+* QoS controls delivery guarantees, not persistence.
+
+* QOS2 ensures exactly-once delivery only while subscribers are online.
+
+* `msgfrom` allows subscribers to recover missed messages after downtime.
+
+* Reliability requires both QoS and replay to work together.
+
+* Feedback is very welcome—and if you find Rembus interesting, a GitHub
+  [star](https://github.com/cardo-org/rembus.python)
+  is always very appreciated ⭐.
