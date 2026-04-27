@@ -30,7 +30,7 @@ cli = rb.node("mynode")
 import rembus as rb
 
 # Asynchronous API
-cli = await rembus.component("mynode")
+cli = await rb.component("mynode")
 ```
 
 The returned `cli` object represents a Rembus component and exposes the core
@@ -91,7 +91,7 @@ df = pd.DataFrame({
     "value": [random() for _ in range(nrows)],
 })
 
-cli = rembus.node("foo")
+cli = rb.node("foo")
 summary = cli.rpc("stats", df)
 cli.close()
 ```
@@ -128,7 +128,7 @@ import rembus as rb
 def mytopic(data):
     print(f"[Sub-1] mytopic: {data}")
 
-sub = rembus.node(name="sub-1")
+sub = rb.node(name="sub-1")
 sub.subscribe(mytopic)
 
 print("up and running")
