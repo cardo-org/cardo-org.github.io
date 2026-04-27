@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://cardo-org.github.io/posts.html</loc>
-    <lastmod>2026-03-14T08:03:28.266Z</lastmod>
-  </url>
-  <url>
     <loc>https://cardo-org.github.io/python.html</loc>
-    <lastmod>2026-03-14T08:03:28.266Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cardo-org.github.io/posts/2026-03-14-pubsub.html</loc>
-    <lastmod>2026-03-14T08:03:28.266Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cardo-org.github.io/index.html</loc>
-    <lastmod>2026-03-14T08:03:28.265Z</lastmod>
-  </url>
-  <url>
-    <loc>https://cardo-org.github.io/julia.html</loc>
-    <lastmod>2026-03-14T08:03:28.265Z</lastmod>
+    <lastmod>2026-04-27T17:01:32.631Z</lastmod>
   </url>
   <url>
     <loc>https://cardo-org.github.io/posts/2026-02-13-rembus-a-gentle-introduction.html</loc>
-    <lastmod>2026-03-14T08:03:28.266Z</lastmod>
+    <lastmod>2026-04-27T17:01:32.630Z</lastmod>
   </url>
   <url>
     <loc>https://cardo-org.github.io/jsonrpc.html</loc>
-    <lastmod>2026-03-14T08:03:28.265Z</lastmod>
+    <lastmod>2026-04-27T17:01:32.630Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cardo-org.github.io/julia.html</loc>
+    <lastmod>2026-04-27T17:01:32.630Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cardo-org.github.io/posts.html</loc>
+    <lastmod>2026-04-27T17:01:32.630Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cardo-org.github.io/posts/2026-03-14-pubsub.html</loc>
+    <lastmod>2026-04-27T17:01:32.631Z</lastmod>
+  </url>
+  <url>
+    <loc>https://cardo-org.github.io/index.html</loc>
+    <lastmod>2026-04-27T17:01:32.630Z</lastmod>
   </url>
 </urlset>

@@ -9,7 +9,7 @@
 <link>https://cardo-org.github.io/posts.html</link>
 <atom:link href="https://cardo-org.github.io/posts.xml" rel="self" type="application/rss+xml"/>
 <description></description>
-<generator>quarto-1.8.27</generator>
+<generator>quarto-1.9.37</generator>
 <lastBuildDate>Sat, 14 Mar 2026 00:00:00 GMT</lastBuildDate>
 <item>
   <title>Pub/Sub message semantics in Rembus</title>

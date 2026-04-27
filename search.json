@@ -1,38 +1,178 @@
 [
   {
-    "objectID": "posts.html",
-    "href": "posts.html",
-    "title": "Rembus Blog",
-    "section": "",
-    "text": "News and tips about Rembus.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPub/Sub message semantics in Rembus\n\n\n\nPython\n\nPub/Sub\n\n\n\nFrom fire-and-forget to exactly-once messaging with Rembus QoS\n\n\n\n\n\nMar 14, 2026\n\n\n\n\n\n\n\n\n\n\n\n\nIntroducing Rembus\n\n\n\nJulia\n\nPython\n\nRPC\n\n\n\nSmall by design, adaptable by nature.\n\n\n\n\n\nFeb 13, 2026\n\n\n\n\n\nNo matching items"
-  },
-  {
     "objectID": "python.html",
     "href": "python.html",
     "title": "Python",
     "section": "",
-    "text": "Install rembus using pip or uv:\npip install rembus\nuv add rembus\nFor the basic concepts about node types and addressing see the Julia docs\nRembus provides both synchronous and asynchronous APIs:\nimport rembus as rb\n\n# Synchronous API\ncli = rb.node(\"mynode\")\nimport rembus as rb\n\n# Asynchronous API\ncli = await rembus.component(\"mynode\")\nThe returned cli object represents a Rembus component and exposes the core communication primitives:\n\nrpc — request a remote service\nexpose — expose a local function as an RPC service\npublish — publish messages to a topic\nsubscribe — subscribe to topic updates"
+    "text": "Install rembus using pip or uv:\npip install rembus\nuv add rembus\nFor the basic concepts about node types and addressing see the Julia docs\nRembus provides both synchronous and asynchronous APIs:\nimport rembus as rb\n\n# Synchronous API\ncli = rb.node(\"mynode\")\nimport rembus as rb\n\n# Asynchronous API\ncli = await rb.component(\"mynode\")\nThe returned cli object represents a Rembus component and exposes the core communication primitives:\n\nrpc — request a remote service\nexpose — expose a local function as an RPC service\npublish — publish messages to a topic\nsubscribe — subscribe to topic updates"
   },
   {
     "objectID": "python.html#getting-started",
     "href": "python.html#getting-started",
     "title": "Python",
     "section": "",
-    "text": "Install rembus using pip or uv:\npip install rembus\nuv add rembus\nFor the basic concepts about node types and addressing see the Julia docs\nRembus provides both synchronous and asynchronous APIs:\nimport rembus as rb\n\n# Synchronous API\ncli = rb.node(\"mynode\")\nimport rembus as rb\n\n# Asynchronous API\ncli = await rembus.component(\"mynode\")\nThe returned cli object represents a Rembus component and exposes the core communication primitives:\n\nrpc — request a remote service\nexpose — expose a local function as an RPC service\npublish — publish messages to a topic\nsubscribe — subscribe to topic updates"
+    "text": "Install rembus using pip or uv:\npip install rembus\nuv add rembus\nFor the basic concepts about node types and addressing see the Julia docs\nRembus provides both synchronous and asynchronous APIs:\nimport rembus as rb\n\n# Synchronous API\ncli = rb.node(\"mynode\")\nimport rembus as rb\n\n# Asynchronous API\ncli = await rb.component(\"mynode\")\nThe returned cli object represents a Rembus component and exposes the core communication primitives:\n\nrpc — request a remote service\nexpose — expose a local function as an RPC service\npublish — publish messages to a topic\nsubscribe — subscribe to topic updates"
   },
   {
     "objectID": "python.html#rpc-call",
     "href": "python.html#rpc-call",
     "title": "Python",
     "section": "RPC Call",
-    "text": "RPC Call\n\n\n\n\n\nflowchart LR\n  C((\"Client\")) --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\nThis example shows a Python client invoking an RPC service implemented in Julia.\n\nJulia Server\nusing Statistics\nusing Rembus\n\nfunction stats(df)\n    return Dict(\n        \"min\"  =&gt; minimum(df.value),\n        \"max\"  =&gt; maximum(df.value),\n        \"mean\" =&gt; mean(df.value),\n        \"std\"  =&gt; std(df.value)\n    )\nend\n\nbro = component()\nexpose(bro, stats)\n\nprintln(\"up and running\")\nwait(bro)\n\n\nPython Client\nimport rembus as rb\nimport pandas as pd\nfrom random import random\n\nnrows = 1_000_000\n\ndf = pd.DataFrame({\n    \"name\": [f\"kpi_{i}\" for i in range(nrows)],\n    \"ts\": range(nrows),\n    \"value\": [random() for _ in range(nrows)],\n})\n\ncli = rembus.node(\"foo\")\nsummary = cli.rpc(\"stats\", df)\ncli.close()\n\n\nData Flow\n\nThe Python client sends a pandas DataFrame.\nRembus converts it into a Julia DataFrame.\nThe Julia service executes the computation.\nThe result is returned as a Python dictionary.\nThe WS connection is closed."
+    "text": "RPC Call\n\n\n\n\n\nflowchart LR\n  C((\"Client\")) --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\nThis example shows a Python client invoking an RPC service implemented in Julia.\n\nJulia Server\nusing Statistics\nusing Rembus\n\nfunction stats(df)\n    return Dict(\n        \"min\"  =&gt; minimum(df.value),\n        \"max\"  =&gt; maximum(df.value),\n        \"mean\" =&gt; mean(df.value),\n        \"std\"  =&gt; std(df.value)\n    )\nend\n\nbro = component()\nexpose(bro, stats)\n\nprintln(\"up and running\")\nwait(bro)\n\n\nPython Client\nimport rembus as rb\nimport pandas as pd\nfrom random import random\n\nnrows = 1_000_000\n\ndf = pd.DataFrame({\n    \"name\": [f\"kpi_{i}\" for i in range(nrows)],\n    \"ts\": range(nrows),\n    \"value\": [random() for _ in range(nrows)],\n})\n\ncli = rb.node(\"foo\")\nsummary = cli.rpc(\"stats\", df)\ncli.close()\n\n\nData Flow\n\nThe Python client sends a pandas DataFrame.\nRembus converts it into a Julia DataFrame.\nThe Julia service executes the computation.\nThe result is returned as a Python dictionary.\nThe WS connection is closed."
   },
   {
     "objectID": "python.html#publish-subscribe",
     "href": "python.html#publish-subscribe",
     "title": "Python",
     "section": "Publish / Subscribe",
-    "text": "Publish / Subscribe\nThis example shows a couple of subsribed nodes implemented in Python and a Julia publisher.\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\n\nSubscribers (Python)\nimport rembus as rb\n\ndef mytopic(data):\n    print(f\"[Sub-1] mytopic: {data}\")\n\nsub = rembus.node(name=\"sub-1\")\nsub.subscribe(mytopic)\n\nprint(\"up and running\")\nsub.wait()\nimport rembus\n\ndef mytopic(data):\n    print(f\"[Sub-2] mytopic: {data}\")\n\nsub = rembus.node(name=\"sub-2\")\nsub.subscribe(mytopic)\n\nprint(\"up and running\")\nsub.wait()\n\n\nPublisher (Julia)\nusing Rembus\n\npub = component([\n  \"ws://:3001/client\",\n  \"ws://:3002/client\"\n])\n\nsensor1 = Dict(\"T\" =&gt; 18.3, \"H\" =&gt; 45.2)\nsensor2 = Dict(\"P\" =&gt; 2.3)\n\npublish(\n    pub,\n    \"mytopic\",\n    Dict(\n        \"sensor#1\" =&gt; sensor1,\n        \"sensor#2\" =&gt; sensor2,\n    )\n)\n\nclose(pub)"
+    "text": "Publish / Subscribe\nThis example shows a couple of subsribed nodes implemented in Python and a Julia publisher.\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\n\nSubscribers (Python)\nimport rembus as rb\n\ndef mytopic(data):\n    print(f\"[Sub-1] mytopic: {data}\")\n\nsub = rb.node(name=\"sub-1\")\nsub.subscribe(mytopic)\n\nprint(\"up and running\")\nsub.wait()\nimport rembus\n\ndef mytopic(data):\n    print(f\"[Sub-2] mytopic: {data}\")\n\nsub = rembus.node(name=\"sub-2\")\nsub.subscribe(mytopic)\n\nprint(\"up and running\")\nsub.wait()\n\n\nPublisher (Julia)\nusing Rembus\n\npub = component([\n  \"ws://:3001/client\",\n  \"ws://:3002/client\"\n])\n\nsensor1 = Dict(\"T\" =&gt; 18.3, \"H\" =&gt; 45.2)\nsensor2 = Dict(\"P\" =&gt; 2.3)\n\npublish(\n    pub,\n    \"mytopic\",\n    Dict(\n        \"sensor#1\" =&gt; sensor1,\n        \"sensor#2\" =&gt; sensor2,\n    )\n)\n\nclose(pub)"
+  },
+  {
+    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#what-is-rembus",
+    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#what-is-rembus",
+    "title": "Introducing Rembus",
+    "section": "What is Rembus?",
+    "text": "What is Rembus?\nRembus is a distributed messaging system designed as a simple and robust solution for building distributed applications. In addition to real-time messaging, Rembus includes embedded datalake support for managing data at rest, leveraging DuckDB and DuckLake as first-class components of the system.\nI originally implemented Rembus because I wanted a simple, robust, and reliable mechanism for building distributed applications in Julia.\nOver time, Rembus grew to include many additional features. Eventually, I realized it was worth writing about what is possible with it, both to document the ideas behind it and to share a different perspective on distributed system design.\nThis first blog post focuses on the Python implementation of Rembus. I hope it gives you some inspiration, or at least a fresh viewpoint, when designing or evaluating distributed architectures.\nHave fun!"
+  },
+  {
+    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#rpc-at-a-glance",
+    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#rpc-at-a-glance",
+    "title": "Introducing Rembus",
+    "section": "RPC at a glance",
+    "text": "RPC at a glance\nSimplicity is the main driving force behind Rembus: install the package, start a few processes, and you already have the essential building blocks of a distributed system: combining messaging, computation, and local analytics without external brokers or heavyweight infrastructure.\nTo get started, install the package using uv:\nuv add rembus\nor with pip:\npip install rembus\nIn the following example, we will use three terminals, running a Python interpreter or the python script calculator.py for the RPC services:\n\nTerminal 1 (Broker) — starts a broker that routes messages\nTerminal 2 (Client) — invokes remote calculator operations\nTerminal 3 (Calculator) — implements and exposes calculator services\n\n\n\n\n\n\ngraph BT\n    B[Terminal 1&lt;br/&gt;Broker]\n\n    A[Terminal 2&lt;br/&gt;Client]\n    C[Terminal 3&lt;br/&gt;Calculator]\n\n    A --&gt; |connect| B\n    C --&gt; |connect| B"
+  },
+  {
+    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#broker",
+    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#broker",
+    "title": "Introducing Rembus",
+    "section": "Broker",
+    "text": "Broker\nThe Broker component is responsible for routing RPC requests and responses between connected nodes.\nIn Terminal 1, start a Python interpreter and create a broker listening on port 8000:\n&gt;&gt;&gt; import rembus as rb\n&gt;&gt;&gt; bro = rb.node(port=8000)\nPort 8000 is the default WebSocket port, so the following is equivalent:\n&gt;&gt;&gt; bro = rb.node()"
+  },
+  {
+    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#calculator",
+    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#calculator",
+    "title": "Introducing Rembus",
+    "section": "Calculator",
+    "text": "Calculator\nThe Calculator component implements two simple operations—add and multiply —and exposes them on the + and * topics.\n# calculator.py\nimport rembus as rb\n\ndef add(x, y):\n    return x + y\n\ndef multiply(x, y):\n    return x * y\n\ndef main():\n    srv = rb.node()\n    srv.expose(add, topic=\"+\")\n    srv.expose(multiply, topic=\"*\")\n    srv.wait()\n\nif __name__ == \"__main__\":\n    main()\nStart the calculator service:\npython calculator.py"
+  },
+  {
+    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#client",
+    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#client",
+    "title": "Introducing Rembus",
+    "section": "Client",
+    "text": "Client\nIn Terminal 2, call the remote services exposed by the calculator:\n&gt;&gt;&gt; import rembus as rb\n&gt;&gt;&gt; cli = rb.node(\"myclient\")\n&gt;&gt;&gt; cli.rpc(\"*\", 2, 3)\n6\n&gt;&gt;&gt; cli.rpc(\"+\", 2, 3)\n5\nThe client transparently invokes remote procedures as if they were local function calls."
+  },
+  {
+    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#whats-next",
+    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#whats-next",
+    "title": "Introducing Rembus",
+    "section": "What’s next?",
+    "text": "What’s next?\nWe have covered the very basics of Rembus: components, a broker, and simple RPC calls.\nFeedback is very welcome. If you find Rembus interesting a star is always very appreciated ⭐.\nStay tuned—this is just the beginning. In upcoming posts we’ll explore pub/sub messaging, persistence, fault tolerance, Julia–Python interoperability, MQTT integration, and native DataFrame messaging."
+  },
+  {
+    "objectID": "jsonrpc.html",
+    "href": "jsonrpc.html",
+    "title": "JSON-RPC",
+    "section": "",
+    "text": "Rembus fully supports the JSON_RPC 2.0 Specification"
+  },
+  {
+    "objectID": "jsonrpc.html#rpc-request",
+    "href": "jsonrpc.html#rpc-request",
+    "title": "JSON-RPC",
+    "section": "RPC Request",
+    "text": "RPC Request\n\n\n\n\n\nflowchart LR\n  C((\"JSON-RPC\n  Client\")) --&gt; S((Julia Server))\n  style C fill:green, color:white\n  style S fill:blue, color:white\n\n\n\n\n\n\n\nServer 🔵 - Exposing a service\nThe following (Julia) server exposes a method mymethod over an HTTP endpoint:\nusing Rembus\n\nfunction mymethod(;x, y, z) # expect to be called with keywords arguments\n    return Dict(\n        \"x\" =&gt; x,\n        \"y\" =&gt; y,\n        \"z\" =&gt; z,\n        \"op\" =&gt; \"x + y*z\",\n        \"value\" =&gt; x + y * z\n    )\nend\n\nrb = component(http=9000)\nexpose(rb, mymethod)\nwait(rb)\n\n\nJSON-RPC Client 🟢\nWhen the server method requires keyword arguments, the JSON-RPC params field must be an object with matching keys:\ncurl -X POST http://localhost:9000 \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"jsonrpc\": \"2.0\",\n    \"method\": \"mymethod\",\n    \"params\": {\"x\": 1, \"y\": 2, \"z\": 3}\n  }'\nThe server responds with a JSON object encoding the Julia Dict returned by mymethod:\n{\n  \"id\":1,\n  \"jsonrpc\":\"2.0\",\n  \"result\": {\n    \"x\":1,\n    \"y\":2,\n    \"z\":3,\n    \"op\":\"x + y*z\",\n    \"value\":7\n  }\n}"
+  },
+  {
+    "objectID": "jsonrpc.html#sending-notifications",
+    "href": "jsonrpc.html#sending-notifications",
+    "title": "JSON-RPC",
+    "section": "Sending Notifications",
+    "text": "Sending Notifications\nA JSON_RPC Notification is simply a Request object without an id field.\nIn Rembus, notifications map naturally to Pub/Sub messages: any published message is delivered to all subscribed components.\nIn this example, the topic is named mymethod.\n\nServer 🔵 - Subscribing to a topic\nusing Rembus\n\nfunction mymethod(x, y, z)\n    println(\"mymethod called with x=$x, y=$y, z=$z\")\nend\n\nrb = component(http=9000)\nsubscribe(rb, mymethod)\n\n# Declare readiness to receive messages from subscribed topics,\n# in this case the topic mymethod.\nreactive(rb)\n\n# Start the event loop.\nwait(rb)\n\n\nJSON-RPC Publisher 🟢\ncurl -X POST http://localhost:9000 \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"jsonrpc\": \"2.0\",\n    \"method\": \"mymethod\",\n    \"params\": [1,2,3]\n  }'"
+  },
+  {
+    "objectID": "jsonrpc.html#batch",
+    "href": "jsonrpc.html#batch",
+    "title": "JSON-RPC",
+    "section": "Batch",
+    "text": "Batch\nTo send multiple requests in a single call, the client may submit an array of Request objects:\ncurl -X POST http://localhost:9000 \\\n  -H \"Content-Type: application/json\" \\\n  -d '[\n    {\n      \"jsonrpc\": \"2.0\",\n      \"method\": \"method1\",\n      \"params\": {\"x\": 1, \"y\": 2, \"z\": 3}\n    },{\n      \"jsonrpc\": \"2.0\",\n      \"method\": \"method2\",\n      \"params\": [\"mystring\", 1.0]\n    }\n  ]'"
+  },
+  {
+    "objectID": "julia.html",
+    "href": "julia.html",
+    "title": "Julia",
+    "section": "",
+    "text": "Install the Rembus package and wait for the download and precompilation steps to complete:\njulia&gt; import Pkg; Pkg.add(\"Rembus\")\n   Resolving package versions...\n   Installed Rembus ─ v1.0.0\n   ...\nPrecompiling project...\n  1 dependency successfully precompiled in 73 seconds. 72 already precompiled.\n\n\nRembus defines three fundamental node types:\n\nComponent (Client)\nConnects to a Broker or directly to other nodes.\nBroker\nAccepts connections and routes RPC and Pub/Sub messages between nodes.\nServer\nAccepts connections and exposes RPC services.\n\n\n\n\nA Rembus node is identified by:\n\na node name\na network address (endpoint accepting connections)\n\nThese are combined into a single connection string.\nExample: a Component named my_node connecting to a Broker over WebSockets:\nrb = component(\"ws://localhost:8000/my_node\")\n\n\nIf omitted, Rembus applies sensible defaults:\n\nProtocol: ws\nHost: 127.0.0.1\nPort: 8000\n\nSo this is equivalent:\nrb = component(\"my_node\")\n\n\n\n\nA Broker can be started in multiple ways.\n\n\nusing Rembus\nRembus.brokerd()\n\n\n\njulia -e 'using Rembus; Rembus.brokerd()'\nBy default, the Broker listens on WebSockets port 8000.\n\n\n\nBrokers may expose multiple transports simultaneously:\njulia -e 'using Rembus; Rembus.brokerd()' -- --ws 8000 --tcp 8001 --zmq 8002 --http 9000\nOr from the REPL:\ncomponent(ws=8000, tcp=8001, zmq=8002, http=9000)\nWhen the HTTP endpoint is enabled, you can verify broker status via JSON-RPC:\ncurl -X POST http://localhost:9000   -H \"Content-Type: application/json\"   -d '{\"jsonrpc\":\"2.0\",\"method\":\"uptime\",\"id\":\"1234\"}'\n\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Client\")) --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\n# server.jl\nusing Rembus\n\ngreet(who::AbstractString) = \"ciao $who\"\n\nsrv = component(name=\"server\")\nexpose(srv, greet)\nwait(srv)\n# client.jl\nusing Rembus\n\ncli = component(\"client\")\nrpc(cli, \"greet\", \"mondo\")\nTyped arguments provide automatic validation. Passing invalid types raises a remote exception.\n\n\nRembus components automatically handle disconnections and reconnections.\nisopen(rb) # false when disconnected\nOnce the remote node restarts, reconnection happens transparently.\n\n\n\n\nPublish-Subscribe can be implemented with or without a Broker.\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; B((Broker))\n  B --&gt; S1((Subscriber 1))\n  B --&gt; S2((Subscriber 2))\n  style B fill:#F0E442, color:black\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers connect to a Broker:\nsub = component(name=\"sub-1\")\nsubscribe(sub, mytopic)\nPublishers send messages through the Broker:\npublish(pub, \"mytopic\", payload)\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C((\"Publisher\")) --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers accept direct connections:\nsub = component(name=\"sub-1\", ws=3001)\nPublishers connect directly to subscribers:\npub = component([\n  \"ws://:3001/pub\",\n  \"ws://:3002/pub\"\n])\nThis model removes the central broker while preserving Pub/Sub semantics.\n\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Client\")) --&gt; B((Broker))\n  B --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style B fill:#F0E442, color:black\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\nServers expose Julia functions as RPC services:\nusing Statistics, Rembus\n\nfunction stats(df)\n    Dict(\n        \"min\" =&gt; minimum(df.value),\n        \"max\" =&gt; maximum(df.value),\n        \"mean\" =&gt; mean(df.value),\n        \"std\" =&gt; std(df.value),\n    )\nend\n\n@expose stats\nClients invoke services using @rpc:\nsummary = @rpc stats(df)\n\n\n\nRembus (Julia) supports advanced broker topologies that allow you to shape message flow according to your deployment needs:\n\nBrokers in series\nEnable message routing across multiple network domains or organizational boundaries.\nBrokers in parallel\nProvide redundancy and load distribution, improving availability and fault tolerance.\n\nThese topologies make it possible to build scalable, resilient, and failure-tolerant Rembus deployments without changing application logic. These patterns enable scalable and resilient deployments.\n\n\n\nRembus supports authentication using:\n\nRSA signatures\nECDSA signatures\nShared secrets\n\nAuthorization is enforced through private topics.\nAutomatic provisioning and deprovisioning is handled via register and unregister.\nSee the Security documentation.\n\n\n\nRembus is configurable via environment variables and settings.json.\nConfigurable aspects include:\n\nData directories\nMessage timeouts\nKeep-alive intervals\nConnection behavior\n\nSee the Configuration documentation."
+  },
+  {
+    "objectID": "julia.html#rembus-node-types",
+    "href": "julia.html#rembus-node-types",
+    "title": "Julia",
+    "section": "",
+    "text": "Rembus defines three fundamental node types:\n\nComponent (Client)\nConnects to a Broker or directly to other nodes.\nBroker\nAccepts connections and routes RPC and Pub/Sub messages between nodes.\nServer\nAccepts connections and exposes RPC services."
+  },
+  {
+    "objectID": "julia.html#addressing-and-connections",
+    "href": "julia.html#addressing-and-connections",
+    "title": "Julia",
+    "section": "",
+    "text": "A Rembus node is identified by:\n\na node name\na network address (endpoint accepting connections)\n\nThese are combined into a single connection string.\nExample: a Component named my_node connecting to a Broker over WebSockets:\nrb = component(\"ws://localhost:8000/my_node\")\n\n\nIf omitted, Rembus applies sensible defaults:\n\nProtocol: ws\nHost: 127.0.0.1\nPort: 8000\n\nSo this is equivalent:\nrb = component(\"my_node\")"
+  },
+  {
+    "objectID": "julia.html#broker",
+    "href": "julia.html#broker",
+    "title": "Julia",
+    "section": "",
+    "text": "A Broker can be started in multiple ways.\n\n\nusing Rembus\nRembus.brokerd()\n\n\n\njulia -e 'using Rembus; Rembus.brokerd()'\nBy default, the Broker listens on WebSockets port 8000.\n\n\n\nBrokers may expose multiple transports simultaneously:\njulia -e 'using Rembus; Rembus.brokerd()' -- --ws 8000 --tcp 8001 --zmq 8002 --http 9000\nOr from the REPL:\ncomponent(ws=8000, tcp=8001, zmq=8002, http=9000)\nWhen the HTTP endpoint is enabled, you can verify broker status via JSON-RPC:\ncurl -X POST http://localhost:9000   -H \"Content-Type: application/json\"   -d '{\"jsonrpc\":\"2.0\",\"method\":\"uptime\",\"id\":\"1234\"}'"
+  },
+  {
+    "objectID": "julia.html#hello-world-rpc",
+    "href": "julia.html#hello-world-rpc",
+    "title": "Julia",
+    "section": "",
+    "text": "flowchart LR\n  C((\"Client\")) --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\n# server.jl\nusing Rembus\n\ngreet(who::AbstractString) = \"ciao $who\"\n\nsrv = component(name=\"server\")\nexpose(srv, greet)\nwait(srv)\n# client.jl\nusing Rembus\n\ncli = component(\"client\")\nrpc(cli, \"greet\", \"mondo\")\nTyped arguments provide automatic validation. Passing invalid types raises a remote exception.\n\n\nRembus components automatically handle disconnections and reconnections.\nisopen(rb) # false when disconnected\nOnce the remote node restarts, reconnection happens transparently."
+  },
+  {
+    "objectID": "julia.html#publish-subscribe",
+    "href": "julia.html#publish-subscribe",
+    "title": "Julia",
+    "section": "",
+    "text": "Publish-Subscribe can be implemented with or without a Broker.\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; B((Broker))\n  B --&gt; S1((Subscriber 1))\n  B --&gt; S2((Subscriber 2))\n  style B fill:#F0E442, color:black\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers connect to a Broker:\nsub = component(name=\"sub-1\")\nsubscribe(sub, mytopic)\nPublishers send messages through the Broker:\npublish(pub, \"mytopic\", payload)\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C((\"Publisher\")) --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers accept direct connections:\nsub = component(name=\"sub-1\", ws=3001)\nPublishers connect directly to subscribers:\npub = component([\n  \"ws://:3001/pub\",\n  \"ws://:3002/pub\"\n])\nThis model removes the central broker while preserving Pub/Sub semantics."
+  },
+  {
+    "objectID": "julia.html#rpc-services",
+    "href": "julia.html#rpc-services",
+    "title": "Julia",
+    "section": "",
+    "text": "flowchart LR\n  C((\"Client\")) --&gt; B((Broker))\n  B --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style B fill:#F0E442, color:black\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\nServers expose Julia functions as RPC services:\nusing Statistics, Rembus\n\nfunction stats(df)\n    Dict(\n        \"min\" =&gt; minimum(df.value),\n        \"max\" =&gt; maximum(df.value),\n        \"mean\" =&gt; mean(df.value),\n        \"std\" =&gt; std(df.value),\n    )\nend\n\n@expose stats\nClients invoke services using @rpc:\nsummary = @rpc stats(df)"
+  },
+  {
+    "objectID": "julia.html#broker-topologies",
+    "href": "julia.html#broker-topologies",
+    "title": "Julia",
+    "section": "",
+    "text": "Rembus (Julia) supports advanced broker topologies that allow you to shape message flow according to your deployment needs:\n\nBrokers in series\nEnable message routing across multiple network domains or organizational boundaries.\nBrokers in parallel\nProvide redundancy and load distribution, improving availability and fault tolerance.\n\nThese topologies make it possible to build scalable, resilient, and failure-tolerant Rembus deployments without changing application logic. These patterns enable scalable and resilient deployments."
+  },
+  {
+    "objectID": "julia.html#security",
+    "href": "julia.html#security",
+    "title": "Julia",
+    "section": "",
+    "text": "Rembus supports authentication using:\n\nRSA signatures\nECDSA signatures\nShared secrets\n\nAuthorization is enforced through private topics.\nAutomatic provisioning and deprovisioning is handled via register and unregister.\nSee the Security documentation."
+  },
+  {
+    "objectID": "julia.html#configuration",
+    "href": "julia.html#configuration",
+    "title": "Julia",
+    "section": "",
+    "text": "Rembus is configurable via environment variables and settings.json.\nConfigurable aspects include:\n\nData directories\nMessage timeouts\nKeep-alive intervals\nConnection behavior\n\nSee the Configuration documentation."
+  },
+  {
+    "objectID": "posts.html",
+    "href": "posts.html",
+    "title": "Rembus Blog",
+    "section": "",
+    "text": "News and tips about Rembus.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPub/Sub message semantics in Rembus\n\n\n\nPython\n\nPub/Sub\n\n\n\nFrom fire-and-forget to exactly-once messaging with Rembus QoS\n\n\n\n\n\nMar 14, 2026\n\n\n\n\n\n\n\n\n\n\n\n\nIntroducing Rembus\n\n\n\nJulia\n\nPython\n\nRPC\n\n\n\nSmall by design, adaptable by nature.\n\n\n\n\n\nFeb 13, 2026\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/2026-03-14-pubsub.html#how-messages-flow",
@@ -117,145 +257,5 @@
     "title": "Rembus",
     "section": "DataFrames support",
     "text": "DataFrames support\nRembus uses the Arrow columnar format to transport dataframes messages between components.\nJulia and Python components may exchange dataframes betweeen DataFrames.jl, Pandas and Polars libraries."
-  },
-  {
-    "objectID": "julia.html",
-    "href": "julia.html",
-    "title": "Julia",
-    "section": "",
-    "text": "Install the Rembus package and wait for the download and precompilation steps to complete:\njulia&gt; import Pkg; Pkg.add(\"Rembus\")\n   Resolving package versions...\n   Installed Rembus ─ v1.0.0\n   ...\nPrecompiling project...\n  1 dependency successfully precompiled in 73 seconds. 72 already precompiled.\n\n\nRembus defines three fundamental node types:\n\nComponent (Client)\nConnects to a Broker or directly to other nodes.\nBroker\nAccepts connections and routes RPC and Pub/Sub messages between nodes.\nServer\nAccepts connections and exposes RPC services.\n\n\n\n\nA Rembus node is identified by:\n\na node name\na network address (endpoint accepting connections)\n\nThese are combined into a single connection string.\nExample: a Component named my_node connecting to a Broker over WebSockets:\nrb = component(\"ws://localhost:8000/my_node\")\n\n\nIf omitted, Rembus applies sensible defaults:\n\nProtocol: ws\nHost: 127.0.0.1\nPort: 8000\n\nSo this is equivalent:\nrb = component(\"my_node\")\n\n\n\n\nA Broker can be started in multiple ways.\n\n\nusing Rembus\nRembus.brokerd()\n\n\n\njulia -e 'using Rembus; Rembus.brokerd()'\nBy default, the Broker listens on WebSockets port 8000.\n\n\n\nBrokers may expose multiple transports simultaneously:\njulia -e 'using Rembus; Rembus.brokerd()' -- --ws 8000 --tcp 8001 --zmq 8002 --http 9000\nOr from the REPL:\ncomponent(ws=8000, tcp=8001, zmq=8002, http=9000)\nWhen the HTTP endpoint is enabled, you can verify broker status via JSON-RPC:\ncurl -X POST http://localhost:9000   -H \"Content-Type: application/json\"   -d '{\"jsonrpc\":\"2.0\",\"method\":\"uptime\",\"id\":\"1234\"}'\n\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Client\")) --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\n# server.jl\nusing Rembus\n\ngreet(who::AbstractString) = \"ciao $who\"\n\nsrv = component(name=\"server\")\nexpose(srv, greet)\nwait(srv)\n# client.jl\nusing Rembus\n\ncli = component(\"client\")\nrpc(cli, \"greet\", \"mondo\")\nTyped arguments provide automatic validation. Passing invalid types raises a remote exception.\n\n\nRembus components automatically handle disconnections and reconnections.\nisopen(rb) # false when disconnected\nOnce the remote node restarts, reconnection happens transparently.\n\n\n\n\nPublish-Subscribe can be implemented with or without a Broker.\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; B((Broker))\n  B --&gt; S1((Subscriber 1))\n  B --&gt; S2((Subscriber 2))\n  style B fill:#F0E442, color:black\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers connect to a Broker:\nsub = component(name=\"sub-1\")\nsubscribe(sub, mytopic)\nPublishers send messages through the Broker:\npublish(pub, \"mytopic\", payload)\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C((\"Publisher\")) --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers accept direct connections:\nsub = component(name=\"sub-1\", ws=3001)\nPublishers connect directly to subscribers:\npub = component([\n  \"ws://:3001/pub\",\n  \"ws://:3002/pub\"\n])\nThis model removes the central broker while preserving Pub/Sub semantics.\n\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Client\")) --&gt; B((Broker))\n  B --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style B fill:#F0E442, color:black\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\nServers expose Julia functions as RPC services:\nusing Statistics, Rembus\n\nfunction stats(df)\n    Dict(\n        \"min\" =&gt; minimum(df.value),\n        \"max\" =&gt; maximum(df.value),\n        \"mean\" =&gt; mean(df.value),\n        \"std\" =&gt; std(df.value),\n    )\nend\n\n@expose stats\nClients invoke services using @rpc:\nsummary = @rpc stats(df)\n\n\n\nRembus (Julia) supports advanced broker topologies that allow you to shape message flow according to your deployment needs:\n\nBrokers in series\nEnable message routing across multiple network domains or organizational boundaries.\nBrokers in parallel\nProvide redundancy and load distribution, improving availability and fault tolerance.\n\nThese topologies make it possible to build scalable, resilient, and failure-tolerant Rembus deployments without changing application logic. These patterns enable scalable and resilient deployments.\n\n\n\nRembus supports authentication using:\n\nRSA signatures\nECDSA signatures\nShared secrets\n\nAuthorization is enforced through private topics.\nAutomatic provisioning and deprovisioning is handled via register and unregister.\nSee the Security documentation.\n\n\n\nRembus is configurable via environment variables and settings.json.\nConfigurable aspects include:\n\nData directories\nMessage timeouts\nKeep-alive intervals\nConnection behavior\n\nSee the Configuration documentation."
-  },
-  {
-    "objectID": "julia.html#rembus-node-types",
-    "href": "julia.html#rembus-node-types",
-    "title": "Julia",
-    "section": "",
-    "text": "Rembus defines three fundamental node types:\n\nComponent (Client)\nConnects to a Broker or directly to other nodes.\nBroker\nAccepts connections and routes RPC and Pub/Sub messages between nodes.\nServer\nAccepts connections and exposes RPC services."
-  },
-  {
-    "objectID": "julia.html#addressing-and-connections",
-    "href": "julia.html#addressing-and-connections",
-    "title": "Julia",
-    "section": "",
-    "text": "A Rembus node is identified by:\n\na node name\na network address (endpoint accepting connections)\n\nThese are combined into a single connection string.\nExample: a Component named my_node connecting to a Broker over WebSockets:\nrb = component(\"ws://localhost:8000/my_node\")\n\n\nIf omitted, Rembus applies sensible defaults:\n\nProtocol: ws\nHost: 127.0.0.1\nPort: 8000\n\nSo this is equivalent:\nrb = component(\"my_node\")"
-  },
-  {
-    "objectID": "julia.html#broker",
-    "href": "julia.html#broker",
-    "title": "Julia",
-    "section": "",
-    "text": "A Broker can be started in multiple ways.\n\n\nusing Rembus\nRembus.brokerd()\n\n\n\njulia -e 'using Rembus; Rembus.brokerd()'\nBy default, the Broker listens on WebSockets port 8000.\n\n\n\nBrokers may expose multiple transports simultaneously:\njulia -e 'using Rembus; Rembus.brokerd()' -- --ws 8000 --tcp 8001 --zmq 8002 --http 9000\nOr from the REPL:\ncomponent(ws=8000, tcp=8001, zmq=8002, http=9000)\nWhen the HTTP endpoint is enabled, you can verify broker status via JSON-RPC:\ncurl -X POST http://localhost:9000   -H \"Content-Type: application/json\"   -d '{\"jsonrpc\":\"2.0\",\"method\":\"uptime\",\"id\":\"1234\"}'"
-  },
-  {
-    "objectID": "julia.html#hello-world-rpc",
-    "href": "julia.html#hello-world-rpc",
-    "title": "Julia",
-    "section": "",
-    "text": "flowchart LR\n  C((\"Client\")) --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\n# server.jl\nusing Rembus\n\ngreet(who::AbstractString) = \"ciao $who\"\n\nsrv = component(name=\"server\")\nexpose(srv, greet)\nwait(srv)\n# client.jl\nusing Rembus\n\ncli = component(\"client\")\nrpc(cli, \"greet\", \"mondo\")\nTyped arguments provide automatic validation. Passing invalid types raises a remote exception.\n\n\nRembus components automatically handle disconnections and reconnections.\nisopen(rb) # false when disconnected\nOnce the remote node restarts, reconnection happens transparently."
-  },
-  {
-    "objectID": "julia.html#publish-subscribe",
-    "href": "julia.html#publish-subscribe",
-    "title": "Julia",
-    "section": "",
-    "text": "Publish-Subscribe can be implemented with or without a Broker.\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; B((Broker))\n  B --&gt; S1((Subscriber 1))\n  B --&gt; S2((Subscriber 2))\n  style B fill:#F0E442, color:black\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers connect to a Broker:\nsub = component(name=\"sub-1\")\nsubscribe(sub, mytopic)\nPublishers send messages through the Broker:\npublish(pub, \"mytopic\", payload)\n\n\n\n\n\n\n\n\n\nflowchart LR\n  C((\"Publisher\")) --&gt; S1((Subscriber 1))\n  C((\"Publisher\")) --&gt; S2((Subscriber 2))\n  style C fill:#009E73, color:white\n  style S1 fill:#0072B2, color:white\n  style S2 fill:#0072B2, color:white\n\n\n\n\n\n\nSubscribers accept direct connections:\nsub = component(name=\"sub-1\", ws=3001)\nPublishers connect directly to subscribers:\npub = component([\n  \"ws://:3001/pub\",\n  \"ws://:3002/pub\"\n])\nThis model removes the central broker while preserving Pub/Sub semantics."
-  },
-  {
-    "objectID": "julia.html#rpc-services",
-    "href": "julia.html#rpc-services",
-    "title": "Julia",
-    "section": "",
-    "text": "flowchart LR\n  C((\"Client\")) --&gt; B((Broker))\n  B --&gt; S((Server))\n  style C fill:#009E73, color:white\n  style B fill:#F0E442, color:black\n  style S fill:#0072B2, color:white\n\n\n\n\n\n\nServers expose Julia functions as RPC services:\nusing Statistics, Rembus\n\nfunction stats(df)\n    Dict(\n        \"min\" =&gt; minimum(df.value),\n        \"max\" =&gt; maximum(df.value),\n        \"mean\" =&gt; mean(df.value),\n        \"std\" =&gt; std(df.value),\n    )\nend\n\n@expose stats\nClients invoke services using @rpc:\nsummary = @rpc stats(df)"
-  },
-  {
-    "objectID": "julia.html#broker-topologies",
-    "href": "julia.html#broker-topologies",
-    "title": "Julia",
-    "section": "",
-    "text": "Rembus (Julia) supports advanced broker topologies that allow you to shape message flow according to your deployment needs:\n\nBrokers in series\nEnable message routing across multiple network domains or organizational boundaries.\nBrokers in parallel\nProvide redundancy and load distribution, improving availability and fault tolerance.\n\nThese topologies make it possible to build scalable, resilient, and failure-tolerant Rembus deployments without changing application logic. These patterns enable scalable and resilient deployments."
-  },
-  {
-    "objectID": "julia.html#security",
-    "href": "julia.html#security",
-    "title": "Julia",
-    "section": "",
-    "text": "Rembus supports authentication using:\n\nRSA signatures\nECDSA signatures\nShared secrets\n\nAuthorization is enforced through private topics.\nAutomatic provisioning and deprovisioning is handled via register and unregister.\nSee the Security documentation."
-  },
-  {
-    "objectID": "julia.html#configuration",
-    "href": "julia.html#configuration",
-    "title": "Julia",
-    "section": "",
-    "text": "Rembus is configurable via environment variables and settings.json.\nConfigurable aspects include:\n\nData directories\nMessage timeouts\nKeep-alive intervals\nConnection behavior\n\nSee the Configuration documentation."
-  },
-  {
-    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#what-is-rembus",
-    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#what-is-rembus",
-    "title": "Introducing Rembus",
-    "section": "What is Rembus?",
-    "text": "What is Rembus?\nRembus is a distributed messaging system designed as a simple and robust solution for building distributed applications. In addition to real-time messaging, Rembus includes embedded datalake support for managing data at rest, leveraging DuckDB and DuckLake as first-class components of the system.\nI originally implemented Rembus because I wanted a simple, robust, and reliable mechanism for building distributed applications in Julia.\nOver time, Rembus grew to include many additional features. Eventually, I realized it was worth writing about what is possible with it, both to document the ideas behind it and to share a different perspective on distributed system design.\nThis first blog post focuses on the Python implementation of Rembus. I hope it gives you some inspiration, or at least a fresh viewpoint, when designing or evaluating distributed architectures.\nHave fun!"
-  },
-  {
-    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#rpc-at-a-glance",
-    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#rpc-at-a-glance",
-    "title": "Introducing Rembus",
-    "section": "RPC at a glance",
-    "text": "RPC at a glance\nSimplicity is the main driving force behind Rembus: install the package, start a few processes, and you already have the essential building blocks of a distributed system: combining messaging, computation, and local analytics without external brokers or heavyweight infrastructure.\nTo get started, install the package using uv:\nuv add rembus\nor with pip:\npip install rembus\nIn the following example, we will use three terminals, running a Python interpreter or the python script calculator.py for the RPC services:\n\nTerminal 1 (Broker) — starts a broker that routes messages\nTerminal 2 (Client) — invokes remote calculator operations\nTerminal 3 (Calculator) — implements and exposes calculator services\n\n\n\n\n\n\ngraph BT\n    B[Terminal 1&lt;br/&gt;Broker]\n\n    A[Terminal 2&lt;br/&gt;Client]\n    C[Terminal 3&lt;br/&gt;Calculator]\n\n    A --&gt; |connect| B\n    C --&gt; |connect| B"
-  },
-  {
-    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#broker",
-    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#broker",
-    "title": "Introducing Rembus",
-    "section": "Broker",
-    "text": "Broker\nThe Broker component is responsible for routing RPC requests and responses between connected nodes.\nIn Terminal 1, start a Python interpreter and create a broker listening on port 8000:\n&gt;&gt;&gt; import rembus as rb\n&gt;&gt;&gt; bro = rb.node(port=8000)\nPort 8000 is the default WebSocket port, so the following is equivalent:\n&gt;&gt;&gt; bro = rb.node()"
-  },
-  {
-    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#calculator",
-    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#calculator",
-    "title": "Introducing Rembus",
-    "section": "Calculator",
-    "text": "Calculator\nThe Calculator component implements two simple operations—add and multiply —and exposes them on the + and * topics.\n# calculator.py\nimport rembus as rb\n\ndef add(x, y):\n    return x + y\n\ndef multiply(x, y):\n    return x * y\n\ndef main():\n    srv = rb.node()\n    srv.expose(add, topic=\"+\")\n    srv.expose(multiply, topic=\"*\")\n    srv.wait()\n\nif __name__ == \"__main__\":\n    main()\nStart the calculator service:\npython calculator.py"
-  },
-  {
-    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#client",
-    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#client",
-    "title": "Introducing Rembus",
-    "section": "Client",
-    "text": "Client\nIn Terminal 2, call the remote services exposed by the calculator:\n&gt;&gt;&gt; import rembus as rb\n&gt;&gt;&gt; cli = rb.node(\"myclient\")\n&gt;&gt;&gt; cli.rpc(\"*\", 2, 3)\n6\n&gt;&gt;&gt; cli.rpc(\"+\", 2, 3)\n5\nThe client transparently invokes remote procedures as if they were local function calls."
-  },
-  {
-    "objectID": "posts/2026-02-13-rembus-a-gentle-introduction.html#whats-next",
-    "href": "posts/2026-02-13-rembus-a-gentle-introduction.html#whats-next",
-    "title": "Introducing Rembus",
-    "section": "What’s next?",
-    "text": "What’s next?\nWe have covered the very basics of Rembus: components, a broker, and simple RPC calls.\nFeedback is very welcome. If you find Rembus interesting a star is always very appreciated ⭐.\nStay tuned—this is just the beginning. In upcoming posts we’ll explore pub/sub messaging, persistence, fault tolerance, Julia–Python interoperability, MQTT integration, and native DataFrame messaging."
-  },
-  {
-    "objectID": "jsonrpc.html",
-    "href": "jsonrpc.html",
-    "title": "JSON-RPC",
-    "section": "",
-    "text": "Rembus fully supports the JSON_RPC 2.0 Specification"
-  },
-  {
-    "objectID": "jsonrpc.html#rpc-request",
-    "href": "jsonrpc.html#rpc-request",
-    "title": "JSON-RPC",
-    "section": "RPC Request",
-    "text": "RPC Request\n\n\n\n\n\nflowchart LR\n  C((\"JSON-RPC\n  Client\")) --&gt; S((Julia Server))\n  style C fill:green, color:white\n  style S fill:blue, color:white\n\n\n\n\n\n\n\nServer 🔵 - Exposing a service\nThe following (Julia) server exposes a method mymethod over an HTTP endpoint:\nusing Rembus\n\nfunction mymethod(;x, y, z) # expect to be called with keywords arguments\n    return Dict(\n        \"x\" =&gt; x,\n        \"y\" =&gt; y,\n        \"z\" =&gt; z,\n        \"op\" =&gt; \"x + y*z\",\n        \"value\" =&gt; x + y * z\n    )\nend\n\nrb = component(http=9000)\nexpose(rb, mymethod)\nwait(rb)\n\n\nJSON-RPC Client 🟢\nWhen the server method requires keyword arguments, the JSON-RPC params field must be an object with matching keys:\ncurl -X POST http://localhost:9000 \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"jsonrpc\": \"2.0\",\n    \"method\": \"mymethod\",\n    \"params\": {\"x\": 1, \"y\": 2, \"z\": 3}\n  }'\nThe server responds with a JSON object encoding the Julia Dict returned by mymethod:\n{\n  \"id\":1,\n  \"jsonrpc\":\"2.0\",\n  \"result\": {\n    \"x\":1,\n    \"y\":2,\n    \"z\":3,\n    \"op\":\"x + y*z\",\n    \"value\":7\n  }\n}"
-  },
-  {
-    "objectID": "jsonrpc.html#sending-notifications",
-    "href": "jsonrpc.html#sending-notifications",
-    "title": "JSON-RPC",
-    "section": "Sending Notifications",
-    "text": "Sending Notifications\nA JSON_RPC Notification is simply a Request object without an id field.\nIn Rembus, notifications map naturally to Pub/Sub messages: any published message is delivered to all subscribed components.\nIn this example, the topic is named mymethod.\n\nServer 🔵 - Subscribing to a topic\nusing Rembus\n\nfunction mymethod(x, y, z)\n    println(\"mymethod called with x=$x, y=$y, z=$z\")\nend\n\nrb = component(http=9000)\nsubscribe(rb, mymethod)\n\n# Declare readiness to receive messages from subscribed topics,\n# in this case the topic mymethod.\nreactive(rb)\n\n# Start the event loop.\nwait(rb)\n\n\nJSON-RPC Publisher 🟢\ncurl -X POST http://localhost:9000 \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"jsonrpc\": \"2.0\",\n    \"method\": \"mymethod\",\n    \"params\": [1,2,3]\n  }'"
-  },
-  {
-    "objectID": "jsonrpc.html#batch",
-    "href": "jsonrpc.html#batch",
-    "title": "JSON-RPC",
-    "section": "Batch",
-    "text": "Batch\nTo send multiple requests in a single call, the client may submit an array of Request objects:\ncurl -X POST http://localhost:9000 \\\n  -H \"Content-Type: application/json\" \\\n  -d '[\n    {\n      \"jsonrpc\": \"2.0\",\n      \"method\": \"method1\",\n      \"params\": {\"x\": 1, \"y\": 2, \"z\": 3}\n    },{\n      \"jsonrpc\": \"2.0\",\n      \"method\": \"method2\",\n      \"params\": [\"mystring\", 1.0]\n    }\n  ]'"
   }
 ]
